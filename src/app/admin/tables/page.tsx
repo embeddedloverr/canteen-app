@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, QrCode, Download, Trash2, X, MapPin, Building2 } from 'lucide-react';
+import { Plus, QrCode, Download, Trash2, X, MapPin, Building2, Edit2, RotateCcw } from 'lucide-react';
 import { Button, Input, Card, Badge } from '@/components/ui';
 import type { Table } from '@/types';
 
@@ -17,6 +17,7 @@ export default function AdminTablesPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [qrModalData, setQrModalData] = useState<{ qrDataUrl: string; tableNumber: string; menuUrl: string; canteenLocation: string } | null>(null);
     const [saving, setSaving] = useState(false);
+    const [editingTable, setEditingTable] = useState<Table | null>(null);
 
     // Form state
     const [form, setForm] = useState({
@@ -49,8 +50,11 @@ export default function AdminTablesPage() {
         setSaving(true);
 
         try {
-            const res = await fetch('/api/tables', {
-                method: 'POST',
+            const url = editingTable ? `/api/tables/${editingTable._id}` : '/api/tables';
+            const method = editingTable ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     tableNumber: form.tableNumber,
@@ -64,13 +68,45 @@ export default function AdminTablesPage() {
 
             if (data.success) {
                 await fetchTables();
-                setIsModalOpen(false);
-                setForm({ tableNumber: '', location: 'Main Hall', canteenLocation: '1st Floor Canteen', capacity: '4' });
+                handleCloseModal();
             }
         } catch (err) {
-            console.error('Failed to create table:', err);
+            console.error('Failed to save table:', err);
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setEditingTable(null);
+        setForm({ tableNumber: '', location: 'Main Hall', canteenLocation: '1st Floor Canteen', capacity: '4' });
+    };
+
+    const handleEdit = (table: Table) => {
+        setEditingTable(table);
+        setForm({
+            tableNumber: table.tableNumber,
+            location: table.location || 'Main Hall',
+            canteenLocation: table.canteenLocation || '1st Floor Canteen',
+            capacity: String(table.capacity || 4),
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleReactivate = async (id: string) => {
+        try {
+            const res = await fetch(`/api/tables/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isActive: true }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                await fetchTables();
+            }
+        } catch (err) {
+            console.error('Failed to reactivate table:', err);
         }
     };
 
@@ -191,9 +227,17 @@ export default function AdminTablesPage() {
                                                         className="flex-1"
                                                     >
                                                         <QrCode className="w-4 h-4 mr-1" />
-                                                        QR Code
+                                                        QR
                                                     </Button>
-                                                    {table.isActive && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        onClick={() => handleEdit(table)}
+                                                        className="text-blue-500 hover:text-blue-400"
+                                                    >
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </Button>
+                                                    {table.isActive ? (
                                                         <Button
                                                             size="sm"
                                                             variant="ghost"
@@ -201,6 +245,15 @@ export default function AdminTablesPage() {
                                                             className="text-red-500 hover:text-red-400"
                                                         >
                                                             <Trash2 className="w-4 h-4" />
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            onClick={() => handleReactivate(table._id)}
+                                                            className="text-green-500 hover:text-green-400"
+                                                        >
+                                                            <RotateCcw className="w-4 h-4" />
                                                         </Button>
                                                     )}
                                                 </div>
@@ -222,7 +275,7 @@ export default function AdminTablesPage() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-                        onClick={() => setIsModalOpen(false)}
+                        onClick={handleCloseModal}
                     >
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
@@ -232,9 +285,9 @@ export default function AdminTablesPage() {
                             className="w-full max-w-md bg-gray-900 rounded-2xl border border-gray-800 shadow-2xl"
                         >
                             <div className="border-b border-gray-800 p-4 flex items-center justify-between">
-                                <h2 className="text-xl font-bold text-white">Add New Table</h2>
+                                <h2 className="text-xl font-bold text-white">{editingTable ? 'Edit Table' : 'Add New Table'}</h2>
                                 <button
-                                    onClick={() => setIsModalOpen(false)}
+                                    onClick={handleCloseModal}
                                     className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
                                 >
                                     <X className="w-5 h-5 text-white" />
@@ -281,11 +334,11 @@ export default function AdminTablesPage() {
                                 />
 
                                 <div className="flex gap-3 pt-4">
-                                    <Button type="button" variant="outline" className="flex-1" onClick={() => setIsModalOpen(false)}>
+                                    <Button type="button" variant="outline" className="flex-1" onClick={handleCloseModal}>
                                         Cancel
                                     </Button>
                                     <Button type="submit" className="flex-1" isLoading={saving}>
-                                        Create Table
+                                        {editingTable ? 'Save Changes' : 'Create Table'}
                                     </Button>
                                 </div>
                             </form>
