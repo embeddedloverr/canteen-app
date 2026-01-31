@@ -30,11 +30,11 @@ export default function StaffDashboardPage() {
     // Ref to track last sound time for recurring notifications
     const lastSoundTimeRef = useRef(0);
 
-    const playNotification = () => {
+    const playNotification = (text: string) => {
         if (!soundEnabled) return;
 
         try {
-            const utterance = new SpeechSynthesisUtterance('New order received');
+            const utterance = new SpeechSynthesisUtterance(text);
             utterance.rate = 0.9;
             window.speechSynthesis.speak(utterance);
         } catch (e) {
@@ -60,8 +60,16 @@ export default function StaffDashboardPage() {
                 const timeSinceLastSound = now - lastSoundTimeRef.current;
                 const shouldPlayRecurring = newPendingCount > 0 && timeSinceLastSound >= 15000; // 15 seconds
 
-                if (hasNewOrders || shouldPlayRecurring) {
-                    playNotification();
+                if (hasNewOrders) {
+                    playNotification('New order received');
+                    lastSoundTimeRef.current = now;
+                } else if (shouldPlayRecurring) {
+                    const pendingOrders = newOrders.filter(o => o.status === 'pending');
+                    const itemDetails = pendingOrders
+                        .flatMap(o => o.items?.map(i => `${i.quantity} ${i.name}`) || [])
+                        .join(', ');
+
+                    playNotification(`Please accept order until accepted. Items are: ${itemDetails}`);
                     lastSoundTimeRef.current = now;
                 }
 
