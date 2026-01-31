@@ -67,7 +67,7 @@ export interface Order {
     updatedAt: string;
 }
 
-export type OrderStatus = 'pending' | 'accepted' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
+export type OrderStatus = 'pending' | 'accepted' | 'delivered' | 'cancelled';
 
 // Cart types
 export interface CartItem {

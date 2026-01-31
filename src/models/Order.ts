@@ -15,7 +15,7 @@ export interface IOrder extends Document {
     tableNumber: string;
     canteenLocation?: string;
     items: IOrderItem[];
-    status: 'pending' | 'accepted' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
+    status: 'pending' | 'accepted' | 'delivered' | 'cancelled';
     eta?: Date;
     acceptedAt?: Date;
     readyAt?: Date;
@@ -84,7 +84,7 @@ const OrderSchema = new Schema<IOrder>(
         },
         status: {
             type: String,
-            enum: ['pending', 'accepted', 'preparing', 'ready', 'delivered', 'cancelled'],
+            enum: ['pending', 'accepted', 'delivered', 'cancelled'],
             default: 'pending',
         },
         eta: {

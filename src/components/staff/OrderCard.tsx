@@ -52,7 +52,7 @@ export function OrderCard({ order, onSelect }: OrderCardProps) {
                             <Badge
                                 variant={
                                     order.status === 'pending' ? 'warning' :
-                                        order.status === 'ready' ? 'success' :
+                                        order.status === 'delivered' ? 'success' :
                                             order.status === 'cancelled' ? 'danger' :
                                                 'info'
                                 }
@@ -88,7 +88,7 @@ export function OrderCard({ order, onSelect }: OrderCardProps) {
                     {order.items.length > 2 && ` +${order.items.length - 2} more`}
                 </div>
 
-                {order.eta && order.status !== 'ready' && order.status !== 'delivered' && (
+                {order.eta && order.status !== 'delivered' && (
                     <div className="mt-3 flex items-center gap-2 text-sm">
                         <Clock className="w-4 h-4 text-orange-500" />
                         <span className="text-orange-400">

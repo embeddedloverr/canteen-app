@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Clock, CheckCircle, XCircle, ChefHat, Truck, Package } from 'lucide-react';
+import { X, Clock, CheckCircle, XCircle, Truck, Package } from 'lucide-react';
 import { Button, Badge, Card } from '@/components/ui';
 import { formatDateTime, getStatusLabel } from '@/lib/utils';
 import type { Order, OrderStatus } from '@/types';
@@ -73,7 +73,7 @@ export function OrderDetailModal({ order, onClose, onUpdate }: OrderDetailModalP
                         <Badge
                             variant={
                                 order.status === 'pending' ? 'warning' :
-                                    order.status === 'ready' ? 'success' :
+                                    order.status === 'delivered' ? 'success' :
                                         order.status === 'cancelled' ? 'danger' :
                                             'info'
                             }
@@ -182,35 +182,11 @@ export function OrderDetailModal({ order, onClose, onUpdate }: OrderDetailModalP
                         {order.status === 'accepted' && (
                             <Button
                                 variant="default"
-                                onClick={() => handleStatusUpdate('preparing')}
-                                isLoading={loading}
-                                className="w-full flex items-center justify-center gap-2"
-                            >
-                                <ChefHat className="w-4 h-4" />
-                                Start Preparing
-                            </Button>
-                        )}
-
-                        {order.status === 'preparing' && (
-                            <Button
-                                variant="default"
-                                onClick={() => handleStatusUpdate('ready')}
-                                isLoading={loading}
-                                className="w-full flex items-center justify-center gap-2"
-                            >
-                                <Truck className="w-4 h-4" />
-                                Mark as Ready
-                            </Button>
-                        )}
-
-                        {order.status === 'ready' && (
-                            <Button
-                                variant="default"
                                 onClick={() => handleStatusUpdate('delivered')}
                                 isLoading={loading}
                                 className="w-full flex items-center justify-center gap-2"
                             >
-                                <CheckCircle className="w-4 h-4" />
+                                <Truck className="w-4 h-4" />
                                 Mark as Delivered
                             </Button>
                         )}

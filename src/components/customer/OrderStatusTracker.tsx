@@ -1,15 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Clock, CheckCircle2, ChefHat, Package, XCircle } from 'lucide-react';
+import { Clock, CheckCircle2, Package, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { OrderStatus } from '@/types';
 
 const statuses: { status: OrderStatus; label: string; icon: React.ElementType }[] = [
     { status: 'pending', label: 'Order Placed', icon: Clock },
     { status: 'accepted', label: 'Accepted', icon: CheckCircle2 },
-    { status: 'preparing', label: 'Preparing', icon: ChefHat },
-    { status: 'ready', label: 'Ready', icon: Package },
 ];
 
 interface OrderStatusTrackerProps {
@@ -51,7 +49,7 @@ export function OrderStatusTracker({ currentStatus, eta }: OrderStatusTrackerPro
     return (
         <div className="p-6">
             {/* ETA Display */}
-            {eta && currentStatus !== 'ready' && (
+            {eta && currentStatus === 'pending' && (
                 <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}

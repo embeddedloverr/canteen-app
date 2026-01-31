@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Clock, CheckCircle, ChefHat, Package, Bell, LogOut, Volume2, VolumeX } from 'lucide-react';
+import { RefreshCw, Clock, CheckCircle, Package, Bell, LogOut, Volume2, VolumeX } from 'lucide-react';
 import { Badge } from '@/components/ui';
 import { OrderCard, OrderDetailModal } from '@/components/staff';
 import type { Order, OrderStatus } from '@/types';
@@ -12,9 +12,7 @@ const statusFilters: { id: OrderStatus | 'all' | 'active'; label: string; icon: 
     { id: 'all', label: 'All', icon: RefreshCw },
     { id: 'pending', label: 'Pending', icon: Clock },
     { id: 'accepted', label: 'Accepted', icon: CheckCircle },
-    { id: 'preparing', label: 'Preparing', icon: ChefHat },
-    { id: 'ready', label: 'Ready', icon: Package },
-    { id: 'delivered', label: 'Delivered', icon: CheckCircle },
+    { id: 'delivered', label: 'Delivered', icon: Package },
 ];
 
 export default function StaffDashboardPage() {
@@ -134,8 +132,8 @@ export default function StaffDashboardPage() {
 
     const stats = [
         { label: 'Pending', value: orders.filter(o => o.status === 'pending').length, color: 'text-yellow-500' },
-        { label: 'Preparing', value: orders.filter(o => o.status === 'preparing').length, color: 'text-purple-500' },
-        { label: 'Ready', value: orders.filter(o => o.status === 'ready').length, color: 'text-green-500' },
+        { label: 'Accepted', value: orders.filter(o => o.status === 'accepted').length, color: 'text-blue-500' },
+        { label: 'Delivered', value: orders.filter(o => o.status === 'delivered').length, color: 'text-green-500' },
     ];
 
     return (

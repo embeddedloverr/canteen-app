@@ -114,7 +114,7 @@ export default function OrderPage({ params }: OrderPageProps) {
                                 variant={
                                     order.status === 'delivered' ? 'success' :
                                         order.status === 'cancelled' ? 'danger' :
-                                            order.status === 'ready' ? 'success' :
+                                            order.status === 'accepted' ? 'info' :
                                                 'warning'
                                 }
                             >
