@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, UtensilsCrossed, QrCode, BarChart3, Settings } from 'lucide-react';
+import { Building2, UtensilsCrossed, QrCode, BarChart3, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-    { href: '/', label: 'Home', icon: Home },
+    { href: '/admin/canteens', label: 'Canteens', icon: Building2 },
     { href: '/admin/menu', label: 'Menu', icon: UtensilsCrossed },
     { href: '/admin/tables', label: 'Tables & QR', icon: QrCode },
     { href: '/staff', label: 'Staff Dashboard', icon: BarChart3 },
