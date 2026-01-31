@@ -158,6 +158,21 @@ export default function AdminTablesPage() {
                 await fetchTables();
             }
         } catch (err) {
+            console.error('Failed to deactivate table:', err);
+        }
+    };
+
+    const handlePermanentDelete = async (id: string) => {
+        if (!confirm('Are you sure you want to PERMANENTLY delete this table? This cannot be undone.')) return;
+
+        try {
+            const res = await fetch(`/api/tables/${id}?permanent=true`, { method: 'DELETE' });
+            const data = await res.json();
+
+            if (data.success) {
+                await fetchTables();
+            }
+        } catch (err) {
             console.error('Failed to delete table:', err);
         }
     };
@@ -258,18 +273,31 @@ export default function AdminTablesPage() {
                                                             variant="ghost"
                                                             onClick={() => handleDelete(table._id)}
                                                             className="text-red-500 hover:text-red-400"
+                                                            title="Deactivate Table"
                                                         >
                                                             <Trash2 className="w-4 h-4" />
                                                         </Button>
                                                     ) : (
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            onClick={() => handleReactivate(table._id)}
-                                                            className="text-green-500 hover:text-green-400"
-                                                        >
-                                                            <RotateCcw className="w-4 h-4" />
-                                                        </Button>
+                                                        <>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                onClick={() => handleReactivate(table._id)}
+                                                                className="text-green-500 hover:text-green-400"
+                                                                title="Reactivate Table"
+                                                            >
+                                                                <RotateCcw className="w-4 h-4" />
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                onClick={() => handlePermanentDelete(table._id)}
+                                                                className="text-red-500 hover:text-red-400"
+                                                                title="Delete Permanently"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </Button>
+                                                        </>
                                                     )}
                                                 </div>
                                             </Card>

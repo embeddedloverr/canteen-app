@@ -73,7 +73,7 @@ export async function PUT(
     }
 }
 
-// DELETE /api/tables/[id] - Deactivate a table
+// DELETE /api/tables/[id] - Deactivate or delete a table
 export async function DELETE(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -82,11 +82,20 @@ export async function DELETE(
         await connectToDatabase();
 
         const { id } = await params;
-        const table = await Table.findByIdAndUpdate(
-            id,
-            { isActive: false },
-            { new: true }
-        );
+        const { searchParams } = new URL(request.url);
+        const permanent = searchParams.get('permanent') === 'true';
+
+        let table;
+
+        if (permanent) {
+            table = await Table.findByIdAndDelete(id);
+        } else {
+            table = await Table.findByIdAndUpdate(
+                id,
+                { isActive: false },
+                { new: true }
+            );
+        }
 
         if (!table) {
             return NextResponse.json(
@@ -97,12 +106,12 @@ export async function DELETE(
 
         return NextResponse.json({
             success: true,
-            message: 'Table deactivated successfully',
+            message: permanent ? 'Table deleted successfully' : 'Table deactivated successfully',
         });
     } catch (error) {
-        console.error('Error deactivating table:', error);
+        console.error('Error deleting/deactivating table:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to deactivate table' },
+            { success: false, error: 'Failed to delete/deactivate table' },
             { status: 500 }
         );
     }
