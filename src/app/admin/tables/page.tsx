@@ -4,12 +4,9 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, QrCode, Download, Trash2, X, MapPin, Building2, Edit2, RotateCcw } from 'lucide-react';
 import { Button, Input, Card, Badge } from '@/components/ui';
-import type { Table } from '@/types';
+import type { Table, Canteen } from '@/types';
 
-const canteenLocations = [
-    '1st Floor Canteen',
-    '2nd Floor Canteen',
-];
+
 
 export default function AdminTablesPage() {
     const [tables, setTables] = useState<Table[]>([]);
@@ -18,6 +15,7 @@ export default function AdminTablesPage() {
     const [qrModalData, setQrModalData] = useState<{ qrDataUrl: string; tableNumber: string; menuUrl: string; canteenLocation: string } | null>(null);
     const [saving, setSaving] = useState(false);
     const [editingTable, setEditingTable] = useState<Table | null>(null);
+    const [canteens, setCanteens] = useState<Canteen[]>([]);
 
     // Form state
     const [form, setForm] = useState({
@@ -41,8 +39,25 @@ export default function AdminTablesPage() {
         }
     };
 
+    const fetchCanteens = async () => {
+        try {
+            const res = await fetch('/api/canteens');
+            const data = await res.json();
+            if (data.success) {
+                setCanteens(data.data);
+                // Set default location if available and not set
+                if (data.data.length > 0 && !form.canteenLocation) {
+                    setForm(prev => ({ ...prev, canteenLocation: data.data[0].name }));
+                }
+            }
+        } catch (err) {
+            console.error('Failed to fetch canteens:', err);
+        }
+    };
+
     useEffect(() => {
         fetchTables();
+        fetchCanteens();
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -303,8 +318,8 @@ export default function AdminTablesPage() {
                                         className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500"
                                         required
                                     >
-                                        {canteenLocations.map(loc => (
-                                            <option key={loc} value={loc}>{loc}</option>
+                                        {canteens.map(canteen => (
+                                            <option key={canteen._id} value={canteen.name}>{canteen.name}</option>
                                         ))}
                                     </select>
                                     <p className="text-xs text-gray-500 mt-1">Staff will deliver orders to this canteen's tables</p>

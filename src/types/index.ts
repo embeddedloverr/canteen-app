@@ -41,6 +41,16 @@ export interface Table {
 
 export type CanteenLocation = '1st Floor Canteen' | '2nd Floor Canteen';
 
+// Canteen types
+export interface Canteen {
+    _id: string;
+    name: string;
+    location?: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
 // Order types
 export interface OrderItem {
     menuItem: string;
