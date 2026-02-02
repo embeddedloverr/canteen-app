@@ -22,7 +22,7 @@ export default function StaffDashboardPage() {
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [refreshing, setRefreshing] = useState(false);
     const [soundEnabled, setSoundEnabled] = useState(true);
-    const [alertOrder, setAlertOrder] = useState<Order | null>(null);
+    const [alertOrders, setAlertOrders] = useState<Order[]>([]);
 
     // Ref to track previous pending count for notifications
     const prevPendingRef = useRef(0);
@@ -137,189 +137,190 @@ export default function StaffDashboardPage() {
 
     // Sound alert loop for urgent pending orders
     useEffect(() => {
-        if (!alertOrder || !soundEnabled) return;
+        // Sound alert loop for urgent pending orders
+        useEffect(() => {
+            if (alertOrders.length === 0 || !soundEnabled) return;
 
-        const playAlert = () => {
-            // Re-use playNotification logic which now includes the beep
-            playNotification(`New order from table ${alertOrder.tableNumber}`);
-        };
+            const playAlert = () => {
+                // Re-use playNotification logic which now includes the beep
+                playNotification(`${alertOrders.length} new orders waiting`);
+            };
 
-        playAlert(); // Play immediately
-        const interval = setInterval(playAlert, 15000); // Repeat every 15s
+            playAlert(); // Play immediately
+            const interval = setInterval(playAlert, 15000); // Repeat every 15s
 
-        return () => clearInterval(interval);
-    }, [alertOrder, soundEnabled]);
+            return () => clearInterval(interval);
+        }, [alertOrders, soundEnabled]);
 
-    const handleUpdateOrder = async (orderId: string, status: OrderStatus, eta?: number, notes?: string) => {
-        try {
-            const res = await fetch(`/api/orders/${orderId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status, eta, staffNotes: notes }),
-            });
+        const handleUpdateOrder = async (orderId: string, status: OrderStatus, eta?: number, notes?: string) => {
+            try {
+                const res = await fetch(`/api/orders/${orderId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status, eta, staffNotes: notes }),
+                });
 
-            const data = await res.json();
+                const data = await res.json();
 
-            if (data.success) {
-                // Update local state
-                setOrders(orders.map(o => o._id === orderId ? data.data : o));
+                if (data.success) {
+                    // Update local state
+                    setOrders(orders.map(o => o._id === orderId ? data.data : o));
 
-                // Update ref count if status changed from pending
-                if (status !== 'pending') {
-                    // Update alert state immediately if the modified order was the alert
-                    if (alertOrder && alertOrder._id === orderId) {
-                        setAlertOrder(null);
+                    // Update ref count if status changed from pending
+                    // Update ref count if status changed from pending
+                    if (status !== 'pending') {
+                        // Remove from alertOrders immediately
+                        setAlertOrders(prev => prev.filter(o => o._id !== orderId));
                     }
                 }
+            } catch (err) {
+                console.error('Failed to update order:', err);
             }
-        } catch (err) {
-            console.error('Failed to update order:', err);
-        }
-    };
+        };
 
-    const handleLogout = async () => {
-        await signOut({ callbackUrl: '/login' });
-    };
+        const handleLogout = async () => {
+            await signOut({ callbackUrl: '/login' });
+        };
 
-    const filteredOrders = orders.filter(order => {
-        if (selectedFilter === 'all') return order.status !== 'delivered' && order.status !== 'cancelled';
-        if (selectedFilter === 'active') return ['pending', 'accepted', 'preparing', 'ready'].includes(order.status);
-        return order.status === selectedFilter;
-    });
+        const filteredOrders = orders.filter(order => {
+            if (selectedFilter === 'all') return order.status !== 'delivered' && order.status !== 'cancelled';
+            if (selectedFilter === 'active') return ['pending', 'accepted', 'preparing', 'ready'].includes(order.status);
+            return order.status === selectedFilter;
+        });
 
-    const pendingCount = orders.filter(o => o.status === 'pending').length;
+        const pendingCount = orders.filter(o => o.status === 'pending').length;
 
-    const stats = [
-        { label: 'Pending', value: orders.filter(o => o.status === 'pending').length, color: 'text-yellow-500' },
-        { label: 'Accepted', value: orders.filter(o => o.status === 'accepted').length, color: 'text-blue-500' },
-        { label: 'Delivered', value: orders.filter(o => o.status === 'delivered').length, color: 'text-green-500' },
-    ];
+        const stats = [
+            { label: 'Pending', value: orders.filter(o => o.status === 'pending').length, color: 'text-yellow-500' },
+            { label: 'Accepted', value: orders.filter(o => o.status === 'accepted').length, color: 'text-blue-500' },
+            { label: 'Delivered', value: orders.filter(o => o.status === 'delivered').length, color: 'text-green-500' },
+        ];
 
-    return (
-        <div className="min-h-screen bg-gray-950">
-            <NewOrderAlertModal
-                order={alertOrder}
-                onAccept={(orderId) => handleUpdateOrder(orderId, 'accepted')}
-            />
-            {/* Header */}
-            <div className="sticky top-0 z-40 bg-gray-950/80 backdrop-blur-lg border-b border-gray-800">
-                <div className="max-w-6xl mx-auto px-4 py-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                            <h1 className="text-2xl font-bold text-white">Staff Dashboard</h1>
-                            {pendingCount > 0 && (
-                                <Badge variant="warning" className="animate-pulse">
-                                    <Bell className="w-3 h-3 mr-1" />
-                                    {pendingCount} new
-                                </Badge>
-                            )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => setSoundEnabled(!soundEnabled)}
-                                className={`p-2 rounded-xl transition-colors ${soundEnabled ? 'bg-orange-500 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                                    }`}
-                                title={soundEnabled ? 'Mute Notifications' : 'Enable Sound Notifications'}
-                            >
-                                {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-                            </button>
-                            <button
-                                onClick={() => fetchOrders(true)}
-                                disabled={refreshing}
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 transition-colors text-white"
-                            >
-                                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                                <span className="hidden sm:inline">Refresh</span>
-                            </button>
-                            <button
-                                onClick={handleLogout}
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
-                            >
-                                <LogOut className="w-4 h-4" />
-                                <span className="hidden sm:inline">Logout</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-3 gap-4 mb-4">
-                        {stats.map(stat => (
-                            <div key={stat.label} className="bg-gray-900/50 rounded-xl p-4 border border-gray-800">
-                                <p className="text-gray-400 text-sm">{stat.label}</p>
-                                <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+        return (
+            <div className="min-h-screen bg-gray-950">
+                <NewOrderAlertModal
+                    orders={alertOrders}
+                    onAccept={(orderId) => handleUpdateOrder(orderId, 'accepted')}
+                />
+                {/* Header */}
+                <div className="sticky top-0 z-40 bg-gray-950/80 backdrop-blur-lg border-b border-gray-800">
+                    <div className="max-w-6xl mx-auto px-4 py-4">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <h1 className="text-2xl font-bold text-white">Staff Dashboard</h1>
+                                {pendingCount > 0 && (
+                                    <Badge variant="warning" className="animate-pulse">
+                                        <Bell className="w-3 h-3 mr-1" />
+                                        {pendingCount} new
+                                    </Badge>
+                                )}
                             </div>
-                        ))}
-                    </div>
-
-                    {/* Filters */}
-                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                        {statusFilters.map(filter => {
-                            const Icon = filter.icon;
-                            const count = filter.id === 'all'
-                                ? orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled').length
-                                : orders.filter(o => o.status === filter.id).length;
-
-                            return (
+                            <div className="flex items-center gap-2">
                                 <button
-                                    key={filter.id}
-                                    onClick={() => setSelectedFilter(filter.id)}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-xl whitespace-nowrap transition-all ${selectedFilter === filter.id
-                                        ? 'bg-orange-500 text-white'
-                                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                                    onClick={() => setSoundEnabled(!soundEnabled)}
+                                    className={`p-2 rounded-xl transition-colors ${soundEnabled ? 'bg-orange-500 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                                         }`}
+                                    title={soundEnabled ? 'Mute Notifications' : 'Enable Sound Notifications'}
                                 >
-                                    <Icon className="w-4 h-4" />
-                                    {filter.label}
-                                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${selectedFilter === filter.id ? 'bg-white/20' : 'bg-gray-700'
-                                        }`}>
-                                        {count}
-                                    </span>
+                                    {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
                                 </button>
-                            );
-                        })}
+                                <button
+                                    onClick={() => fetchOrders(true)}
+                                    disabled={refreshing}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 transition-colors text-white"
+                                >
+                                    <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                                    <span className="hidden sm:inline">Refresh</span>
+                                </button>
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Logout</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Stats */}
+                        <div className="grid grid-cols-3 gap-4 mb-4">
+                            {stats.map(stat => (
+                                <div key={stat.label} className="bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                                    <p className="text-gray-400 text-sm">{stat.label}</p>
+                                    <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Filters */}
+                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                            {statusFilters.map(filter => {
+                                const Icon = filter.icon;
+                                const count = filter.id === 'all'
+                                    ? orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled').length
+                                    : orders.filter(o => o.status === filter.id).length;
+
+                                return (
+                                    <button
+                                        key={filter.id}
+                                        onClick={() => setSelectedFilter(filter.id)}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl whitespace-nowrap transition-all ${selectedFilter === filter.id
+                                            ? 'bg-orange-500 text-white'
+                                            : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                                            }`}
+                                    >
+                                        <Icon className="w-4 h-4" />
+                                        {filter.label}
+                                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${selectedFilter === filter.id ? 'bg-white/20' : 'bg-gray-700'
+                                            }`}>
+                                            {count}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Orders Grid */}
-            <div className="max-w-6xl mx-auto px-4 py-6">
-                {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {[...Array(6)].map((_, i) => (
-                            <div key={i} className="h-40 rounded-2xl bg-gray-800/50 animate-pulse" />
-                        ))}
-                    </div>
-                ) : filteredOrders.length === 0 ? (
-                    <div className="text-center py-12">
-                        <div className="text-6xl mb-4">📋</div>
-                        <h2 className="text-xl font-bold text-white mb-2">No orders</h2>
-                        <p className="text-gray-400">Orders will appear here when customers place them</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <AnimatePresence mode="popLayout">
-                            {filteredOrders.map(order => (
-                                <OrderCard
-                                    key={order._id}
-                                    order={order}
-                                    onSelect={setSelectedOrder}
-                                />
+                {/* Orders Grid */}
+                <div className="max-w-6xl mx-auto px-4 py-6">
+                    {loading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {[...Array(6)].map((_, i) => (
+                                <div key={i} className="h-40 rounded-2xl bg-gray-800/50 animate-pulse" />
                             ))}
-                        </AnimatePresence>
-                    </div>
-                )}
-            </div>
+                        </div>
+                    ) : filteredOrders.length === 0 ? (
+                        <div className="text-center py-12">
+                            <div className="text-6xl mb-4">📋</div>
+                            <h2 className="text-xl font-bold text-white mb-2">No orders</h2>
+                            <p className="text-gray-400">Orders will appear here when customers place them</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <AnimatePresence mode="popLayout">
+                                {filteredOrders.map(order => (
+                                    <OrderCard
+                                        key={order._id}
+                                        order={order}
+                                        onSelect={setSelectedOrder}
+                                    />
+                                ))}
+                            </AnimatePresence>
+                        </div>
+                    )}
+                </div>
 
-            {/* Order Detail Modal */}
-            <AnimatePresence>
-                {selectedOrder && (
-                    <OrderDetailModal
-                        order={selectedOrder}
-                        onClose={() => setSelectedOrder(null)}
-                        onUpdate={handleUpdateOrder}
-                    />
-                )}
-            </AnimatePresence>
-        </div>
-    );
-}
+                {/* Order Detail Modal */}
+                <AnimatePresence>
+                    {selectedOrder && (
+                        <OrderDetailModal
+                            order={selectedOrder}
+                            onClose={() => setSelectedOrder(null)}
+                            onUpdate={handleUpdateOrder}
+                        />
+                    )}
+                </AnimatePresence>
+            </div>
+        );
+    }
