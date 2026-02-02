@@ -195,7 +195,7 @@ export default function StaffDashboardPage() {
         <div className="min-h-screen bg-gray-950">
             <NewOrderAlertModal
                 orders={alertOrders}
-                onAccept={(orderId) => handleUpdateOrder(orderId, 'accepted')}
+                onAccept={(orderId, eta, notes) => handleUpdateOrder(orderId, 'accepted', eta, notes)}
                 onReject={(orderId, reason) => handleUpdateOrder(orderId, 'cancelled', undefined, reason)}
             />
             {/* Header */}
