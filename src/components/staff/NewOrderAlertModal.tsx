@@ -69,8 +69,8 @@ export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze, isDar
                     <button
                         onClick={() => setIsMinimized(false)}
                         className={`p-4 rounded-full shadow-2xl flex items-center gap-3 border-4 group ${isDarkMode
-                                ? 'bg-orange-600 hover:bg-orange-500 text-white border-gray-900'
-                                : 'bg-orange-500 hover:bg-orange-400 text-white border-white'
+                            ? 'bg-orange-600 hover:bg-orange-500 text-white border-gray-900'
+                            : 'bg-orange-500 hover:bg-orange-400 text-white border-white'
                             }`}
                     >
                         <div className="relative">
@@ -100,7 +100,7 @@ export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze, isDar
                         <motion.div
                             initial={{ y: -20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
-                            className="flex items-center justify-between text-white mb-4 w-full"
+                            className="flex items-center justify-between text-white mb-4 w-full px-4"
                         >
                             <div className="w-10"></div> {/* Spacer */}
 
@@ -122,7 +122,7 @@ export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze, isDar
                         </motion.div>
 
                         {/* Scrollable Grid */}
-                        <div className="overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4 px-2 pb-4 scrollbar-hide">
+                        <div className="overflow-y-auto grid grid-cols-1 gap-4 px-4 pb-4">
                             {orders.map((order, index) => {
                                 const itemsSummary = (order.items || [])
                                     .map(i => `${i.quantity}x ${i.name}`)
@@ -246,18 +246,17 @@ export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze, isDar
                             })}
                         </div>
 
-                        <div className="px-4 pb-2 text-center">
+                        <div className="px-4 pb-4 pt-2 text-center sticky bottom-0 bg-gradient-to-t from-gray-900 via-gray-900/90 to-transparent">
                             <button
                                 onClick={onSnooze}
                                 className="text-gray-400 hover:text-white text-sm font-medium hover:underline transition-colors"
                             >
                                 Snooze for 5 minutes
                             </button>
+                            <p className="text-gray-500 text-center text-xs animate-pulse mt-2">
+                                Accept all pending orders to stop the alarm
+                            </p>
                         </div>
-
-                        <p className="text-gray-500 text-center text-sm animate-pulse mb-4">
-                            Accept all pending orders to stop the alarm
-                        </p>
                     </div>
                 </motion.div>
             )}
