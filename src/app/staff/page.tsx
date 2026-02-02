@@ -5,7 +5,7 @@ import { signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Clock, CheckCircle, Package, Bell, LogOut, Volume2, VolumeX } from 'lucide-react';
 import { Badge } from '@/components/ui';
-import { OrderCard, OrderDetailModal, NewOrderBanner } from '@/components/staff';
+import { OrderCard, OrderDetailModal, NewOrderAlertModal } from '@/components/staff';
 import type { Order, OrderStatus } from '@/types';
 
 const statusFilters: { id: OrderStatus | 'all' | 'active'; label: string; icon: React.ElementType }[] = [
