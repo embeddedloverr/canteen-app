@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Clock, CheckCircle, Package, Bell, LogOut, Volume2, VolumeX } from 'lucide-react';
+import { RefreshCw, Clock, CheckCircle, Package, Bell, LogOut, Volume2, VolumeX, Sun, Moon } from 'lucide-react';
 import { Badge } from '@/components/ui';
 import { OrderCard, OrderDetailModal, NewOrderAlertModal } from '@/components/staff';
 import type { Order, OrderStatus } from '@/types';
@@ -22,6 +22,7 @@ export default function StaffDashboardPage() {
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [refreshing, setRefreshing] = useState(false);
     const [soundEnabled, setSoundEnabled] = useState(true);
+    const [isDarkMode, setIsDarkMode] = useState(true);
     const [alertOrders, setAlertOrders] = useState<Order[]>([]);
     const [snoozeUntil, setSnoozeUntil] = useState<number>(0);
 
@@ -196,21 +197,22 @@ export default function StaffDashboardPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-950">
+        <div className={`min-h-screen ${isDarkMode ? 'bg-gray-950' : 'bg-gray-50'}`}>
             {(!snoozeUntil || Date.now() > snoozeUntil) && (
                 <NewOrderAlertModal
                     orders={alertOrders}
                     onAccept={(orderId, eta, notes) => handleUpdateOrder(orderId, 'accepted', eta, notes)}
                     onReject={(orderId, reason) => handleUpdateOrder(orderId, 'cancelled', undefined, reason)}
                     onSnooze={() => setSnoozeUntil(Date.now() + 5 * 60 * 1000)} // 5 minutes
+                    isDarkMode={isDarkMode}
                 />
             )}
             {/* Header */}
-            <div className="sticky top-0 z-40 bg-gray-950/80 backdrop-blur-lg border-b border-gray-800">
+            <div className={`sticky top-0 z-40 backdrop-blur-lg border-b ${isDarkMode ? 'bg-gray-950/80 border-gray-800' : 'bg-white/80 border-gray-200'}`}>
                 <div className="max-w-6xl mx-auto px-4 py-4">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl font-bold text-white">Staff Dashboard</h1>
+                            <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Staff Dashboard</h1>
                             {pendingCount > 0 && (
                                 <Badge variant="warning" className="animate-pulse">
                                     <Bell className="w-3 h-3 mr-1" />
@@ -220,8 +222,17 @@ export default function StaffDashboardPage() {
                         </div>
                         <div className="flex items-center gap-2">
                             <button
+                                onClick={() => setIsDarkMode(!isDarkMode)}
+                                className={`p-2 rounded-xl transition-colors ${isDarkMode ? 'bg-gray-800 text-yellow-400 hover:bg-gray-700' : 'bg-gray-100 text-orange-500 hover:bg-gray-200'}`}
+                                title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                            >
+                                {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                            </button>
+                            <button
                                 onClick={() => setSoundEnabled(!soundEnabled)}
-                                className={`p-2 rounded-xl transition-colors ${soundEnabled ? 'bg-orange-500 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                                className={`p-2 rounded-xl transition-colors ${soundEnabled
+                                        ? (isDarkMode ? 'bg-orange-500 text-white' : 'bg-orange-500 text-white')
+                                        : (isDarkMode ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-gray-100 text-gray-400 hover:bg-gray-200')
                                     }`}
                                 title={soundEnabled ? 'Mute Notifications' : 'Enable Sound Notifications'}
                             >
@@ -230,7 +241,10 @@ export default function StaffDashboardPage() {
                             <button
                                 onClick={() => fetchOrders(true)}
                                 disabled={refreshing}
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 transition-colors text-white"
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${isDarkMode
+                                        ? 'bg-gray-800 hover:bg-gray-700 text-white'
+                                        : 'bg-white border border-gray-200 hover:bg-gray-50 text-gray-700'
+                                    }`}
                             >
                                 <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
                                 <span className="hidden sm:inline">Refresh</span>
@@ -248,8 +262,9 @@ export default function StaffDashboardPage() {
                     {/* Stats */}
                     <div className="grid grid-cols-3 gap-4 mb-4">
                         {stats.map(stat => (
-                            <div key={stat.label} className="bg-gray-900/50 rounded-xl p-4 border border-gray-800">
-                                <p className="text-gray-400 text-sm">{stat.label}</p>
+                            <div key={stat.label} className={`rounded-xl p-4 border ${isDarkMode ? 'bg-gray-900/50 border-gray-800' : 'bg-white border-gray-200 shadow-sm'
+                                }`}>
+                                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{stat.label}</p>
                                 <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
                             </div>
                         ))}
@@ -268,13 +283,15 @@ export default function StaffDashboardPage() {
                                     key={filter.id}
                                     onClick={() => setSelectedFilter(filter.id)}
                                     className={`flex items-center gap-2 px-4 py-2 rounded-xl whitespace-nowrap transition-all ${selectedFilter === filter.id
-                                        ? 'bg-orange-500 text-white'
-                                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                                            ? 'bg-orange-500 text-white'
+                                            : (isDarkMode ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50')
                                         }`}
                                 >
                                     <Icon className="w-4 h-4" />
                                     {filter.label}
-                                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${selectedFilter === filter.id ? 'bg-white/20' : 'bg-gray-700'
+                                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${selectedFilter === filter.id
+                                            ? 'bg-white/20'
+                                            : (isDarkMode ? 'bg-gray-700' : 'bg-gray-100')
                                         }`}>
                                         {count}
                                     </span>
@@ -290,14 +307,14 @@ export default function StaffDashboardPage() {
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {[...Array(6)].map((_, i) => (
-                            <div key={i} className="h-40 rounded-2xl bg-gray-800/50 animate-pulse" />
+                            <div key={i} className={`h-40 rounded-2xl animate-pulse ${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-200'}`} />
                         ))}
                     </div>
                 ) : filteredOrders.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="text-6xl mb-4">📋</div>
-                        <h2 className="text-xl font-bold text-white mb-2">No orders</h2>
-                        <p className="text-gray-400">Orders will appear here when customers place them</p>
+                        <h2 className={`text-xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>No orders</h2>
+                        <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Orders will appear here when customers place them</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
