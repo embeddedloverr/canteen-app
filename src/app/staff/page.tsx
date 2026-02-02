@@ -21,7 +21,7 @@ export default function StaffDashboardPage() {
     const [selectedFilter, setSelectedFilter] = useState<OrderStatus | 'all' | 'active'>('all');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [refreshing, setRefreshing] = useState(false);
-    const [soundEnabled, setSoundEnabled] = useState(false);
+    const [soundEnabled, setSoundEnabled] = useState(true);
     const [alertOrder, setAlertOrder] = useState<Order | null>(null);
 
     // Ref to track previous pending count for notifications
