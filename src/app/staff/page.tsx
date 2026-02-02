@@ -33,23 +33,31 @@ export default function StaffDashboardPage() {
         if (!soundEnabled) return;
 
         try {
-            // Play synthetic bell sound
+            // Play synthetic "Ding-Dong" sound
             const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
 
-            osc.connect(gain);
-            gain.connect(ctx.destination);
+            const playNote = (freq: number, startTime: number) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
 
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(500, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1000, ctx.currentTime + 0.1);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
 
-            gain.gain.setValueAtTime(0.3, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, startTime);
 
-            osc.start();
-            osc.stop(ctx.currentTime + 0.5);
+                gain.gain.setValueAtTime(0, startTime);
+                gain.gain.linearRampToValueAtTime(0.3, startTime + 0.05); // Attack
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.5); // Decay
+
+                osc.start(startTime);
+                osc.stop(startTime + 1.5);
+            };
+
+            // Ding (High)
+            playNote(880, ctx.currentTime); // A5
+            // Dong (Low)
+            playNote(698.46, ctx.currentTime + 0.6); // F5
 
             // Play TTS after the chime
             setTimeout(() => {
