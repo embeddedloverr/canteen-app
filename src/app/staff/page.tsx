@@ -33,6 +33,25 @@ export default function StaffDashboardPage() {
         if (!soundEnabled) return;
 
         try {
+            // Play synthetic bell sound
+            const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(500, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1000, ctx.currentTime + 0.1);
+
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+
+            osc.start();
+            osc.stop(ctx.currentTime + 0.5);
+
+            // Play TTS
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.rate = 0.9;
             window.speechSynthesis.speak(utterance);
@@ -111,8 +130,7 @@ export default function StaffDashboardPage() {
         if (!alertOrder || !soundEnabled) return;
 
         const playAlert = () => {
-            const audio = new Audio('/notification.mp3');
-            audio.play().catch(e => console.error("Audio play failed", e));
+            // Re-use playNotification logic which now includes the beep
             playNotification(`New order from table ${alertOrder.tableNumber}`);
         };
 
