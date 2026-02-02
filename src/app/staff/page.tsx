@@ -67,7 +67,7 @@ export default function StaffDashboardPage() {
                         .flatMap(o => o.items?.map(i => `${i.quantity} ${i.name}`) || [])
                         .join(', ');
 
-                    playNotification(`Please accept order until accepted. Items are: ${itemDetails}`);
+                    playNotification(`Please accept order. Items are: ${itemDetails}`);
                     lastSoundTimeRef.current = now;
                 }
 
