@@ -197,7 +197,7 @@ export default function StaffDashboardPage() {
 
     return (
         <div className="min-h-screen bg-gray-950">
-            <NewOrderBanner
+            <NewOrderAlertModal
                 order={alertOrder}
                 onAccept={(orderId) => handleUpdateOrder(orderId, 'accepted')}
             />
