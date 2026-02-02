@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, CheckCircle, Clock, XCircle, X } from 'lucide-react';
+import { Bell, CheckCircle, Clock, XCircle, X, Minus } from 'lucide-react';
 import { Order } from '@/types';
 
 interface NewOrderAlertModalProps {
@@ -196,6 +196,7 @@ export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze }: New
                     </div>
                 </div>
             </motion.div>
+            )}
         </AnimatePresence>
     );
 }
