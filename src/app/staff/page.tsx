@@ -51,10 +51,12 @@ export default function StaffDashboardPage() {
             osc.start();
             osc.stop(ctx.currentTime + 0.5);
 
-            // Play TTS
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 0.9;
-            window.speechSynthesis.speak(utterance);
+            // Play TTS after the chime
+            setTimeout(() => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }, 1000);
         } catch (e) {
             console.error('Audio notification failed:', e);
         }
