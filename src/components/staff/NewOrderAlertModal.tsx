@@ -122,7 +122,7 @@ export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze, isDar
                         </motion.div>
 
                         {/* Scrollable Grid */}
-                        <div className="overflow-y-auto grid grid-cols-1 gap-4 px-4 pb-4">
+                        <div className="flex-1 overflow-y-auto grid grid-cols-1 gap-4 px-4 pb-4 min-h-0">
                             {orders.map((order, index) => {
                                 const itemsSummary = (order.items || [])
                                     .map(i => `${i.quantity}x ${i.name}`)
@@ -135,6 +135,7 @@ export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze, isDar
                                 return (
                                     <motion.div
                                         key={order._id}
+                                        layout
                                         initial={{ scale: 0.9, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
                                         transition={{ delay: index * 0.1 }}
@@ -161,7 +162,11 @@ export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze, isDar
                                             </div>
 
                                             {isActive ? (
-                                                <div className={`p-4 rounded-xl border ${isRejecting ? 'bg-red-500/10 border-red-500/30' : 'bg-green-500/10 border-green-500/30'}`}>
+                                                <motion.div
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: 'auto' }}
+                                                    className={`p-4 rounded-xl border ${isRejecting ? 'bg-red-500/10 border-red-500/30' : 'bg-green-500/10 border-green-500/30'}`}
+                                                >
                                                     <h4 className={`text-sm font-bold mb-3 ${isRejecting ? 'text-red-400' : 'text-green-400'}`}>
                                                         {isRejecting ? 'Reason for Rejection:' : 'Confirm Acceptance:'}
                                                     </h4>
@@ -219,7 +224,7 @@ export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze, isDar
                                                             {isRejecting ? 'Confirm Reject' : 'Confirm Accept'}
                                                         </button>
                                                     </div>
-                                                </div>
+                                                </motion.div>
                                             ) : (
                                                 <div className="flex gap-3">
                                                     <button
@@ -246,7 +251,7 @@ export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze, isDar
                             })}
                         </div>
 
-                        <div className="px-4 pb-4 pt-2 text-center sticky bottom-0 bg-gradient-to-t from-gray-900 via-gray-900/90 to-transparent">
+                        <div className="px-4 pb-4 pt-2 text-center bg-gray-900 border-t border-gray-800">
                             <button
                                 onClick={onSnooze}
                                 className="text-gray-400 hover:text-white text-sm font-medium hover:underline transition-colors"
