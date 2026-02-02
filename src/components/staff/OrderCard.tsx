@@ -9,6 +9,7 @@ import type { Order } from '@/types';
 interface OrderCardProps {
     order: Order;
     onSelect: (order: Order) => void;
+    isDarkMode?: boolean;
 }
 
 const statusIcons = {
@@ -29,7 +30,7 @@ const statusColors = {
     cancelled: 'border-red-500 bg-red-500/10',
 };
 
-export function OrderCard({ order, onSelect }: OrderCardProps) {
+export function OrderCard({ order, onSelect, isDarkMode = true }: OrderCardProps) {
     const Icon = statusIcons[order.status];
     const totalItems = (order.items || []).reduce((sum, item) => sum + item.quantity, 0);
 
@@ -48,7 +49,7 @@ export function OrderCard({ order, onSelect }: OrderCardProps) {
                 <div className="flex items-start justify-between mb-3">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold text-white">{order.orderNumber}</span>
+                            <span className={`font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{order.orderNumber}</span>
                             <Badge
                                 variant={
                                     order.status === 'pending' ? 'warning' :
@@ -60,7 +61,7 @@ export function OrderCard({ order, onSelect }: OrderCardProps) {
                                 {getStatusLabel(order.status)}
                             </Badge>
                         </div>
-                        <p className="text-sm text-gray-400">Table {order.tableNumber}</p>
+                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Table {order.tableNumber}</p>
                     </div>
                     <div className="text-right">
                         <div className="flex items-center gap-1 text-orange-500 font-bold">
@@ -72,17 +73,17 @@ export function OrderCard({ order, onSelect }: OrderCardProps) {
                 </div>
 
                 <div className="flex items-center gap-3 mb-3">
-                    <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'}`}>
                         <Icon className="w-4 h-4 text-gray-400" />
                     </div>
                     <div>
-                        <p className="text-sm text-white font-medium">{order.customerName}</p>
-                        <p className="text-xs text-gray-500">Table {order.tableNumber}</p>
+                        <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{order.customerName}</p>
+                        <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>Table {order.tableNumber}</p>
                     </div>
                 </div>
 
-                <div className="text-sm text-gray-400">
-                    <span className="font-medium text-gray-300">{(order.items || []).length} item{(order.items || []).length > 1 ? 's' : ''}</span>
+                <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <span className={`font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{(order.items || []).length} item{(order.items || []).length > 1 ? 's' : ''}</span>
                     {' • '}
                     {(order.items || []).slice(0, 2).map(i => i.name).join(', ')}
                     {(order.items || []).length > 2 && ` +${order.items.length - 2} more`}

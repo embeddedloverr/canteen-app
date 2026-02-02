@@ -231,8 +231,8 @@ export default function StaffDashboardPage() {
                             <button
                                 onClick={() => setSoundEnabled(!soundEnabled)}
                                 className={`p-2 rounded-xl transition-colors ${soundEnabled
-                                        ? (isDarkMode ? 'bg-orange-500 text-white' : 'bg-orange-500 text-white')
-                                        : (isDarkMode ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-gray-100 text-gray-400 hover:bg-gray-200')
+                                    ? (isDarkMode ? 'bg-orange-500 text-white' : 'bg-orange-500 text-white')
+                                    : (isDarkMode ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-gray-100 text-gray-400 hover:bg-gray-200')
                                     }`}
                                 title={soundEnabled ? 'Mute Notifications' : 'Enable Sound Notifications'}
                             >
@@ -242,8 +242,8 @@ export default function StaffDashboardPage() {
                                 onClick={() => fetchOrders(true)}
                                 disabled={refreshing}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${isDarkMode
-                                        ? 'bg-gray-800 hover:bg-gray-700 text-white'
-                                        : 'bg-white border border-gray-200 hover:bg-gray-50 text-gray-700'
+                                    ? 'bg-gray-800 hover:bg-gray-700 text-white'
+                                    : 'bg-white border border-gray-200 hover:bg-gray-50 text-gray-700'
                                     }`}
                             >
                                 <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -283,15 +283,15 @@ export default function StaffDashboardPage() {
                                     key={filter.id}
                                     onClick={() => setSelectedFilter(filter.id)}
                                     className={`flex items-center gap-2 px-4 py-2 rounded-xl whitespace-nowrap transition-all ${selectedFilter === filter.id
-                                            ? 'bg-orange-500 text-white'
-                                            : (isDarkMode ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50')
+                                        ? 'bg-orange-500 text-white'
+                                        : (isDarkMode ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50')
                                         }`}
                                 >
                                     <Icon className="w-4 h-4" />
                                     {filter.label}
                                     <span className={`text-xs px-1.5 py-0.5 rounded-full ${selectedFilter === filter.id
-                                            ? 'bg-white/20'
-                                            : (isDarkMode ? 'bg-gray-700' : 'bg-gray-100')
+                                        ? 'bg-white/20'
+                                        : (isDarkMode ? 'bg-gray-700' : 'bg-gray-100')
                                         }`}>
                                         {count}
                                     </span>
@@ -324,6 +324,7 @@ export default function StaffDashboardPage() {
                                     key={order._id}
                                     order={order}
                                     onSelect={setSelectedOrder}
+                                    isDarkMode={isDarkMode}
                                 />
                             ))}
                         </AnimatePresence>
