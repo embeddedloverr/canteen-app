@@ -64,7 +64,19 @@ export default function StaffDashboardPage() {
             // Play TTS after the chime
             setTimeout(() => {
                 const utterance = new SpeechSynthesisUtterance(text);
-                utterance.rate = 1.0;
+
+                // Attempt to set Indian accent
+                const voices = window.speechSynthesis.getVoices();
+                const indianVoice = voices.find(v => v.lang.includes('IN') || v.name.includes('India'));
+
+                if (indianVoice) {
+                    utterance.voice = indianVoice;
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                } else {
+                    utterance.rate = 1.0;
+                }
+
                 window.speechSynthesis.speak(utterance);
             }, 1000);
         } catch (e) {
@@ -133,8 +145,17 @@ export default function StaffDashboardPage() {
         if (alertOrders.length === 0 || !soundEnabled) return;
 
         const playAlert = () => {
-            // Re-use playNotification logic which now includes the beep
-            playNotification(`${alertOrders.length} new orders waiting`);
+            // Construct detailed announcement
+            const visibleOrders = alertOrders.slice(0, 3); // Limit to 3
+            const details = visibleOrders.map(o => {
+                const items = (o.items || []).map(i => i.name).join(', ');
+                return `Table ${o.tableNumber}, ${items}`;
+            }).join('. Next, ');
+
+            let text = `${alertOrders.length} new order${alertOrders.length > 1 ? 's' : ''}! ${details}`;
+            if (alertOrders.length > 3) text += `. And ${alertOrders.length - 3} more.`;
+
+            playNotification(text);
         };
 
         const now = Date.now();
