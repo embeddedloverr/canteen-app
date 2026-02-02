@@ -5,7 +5,7 @@ import { signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Clock, CheckCircle, Package, Bell, LogOut, Volume2, VolumeX } from 'lucide-react';
 import { Badge } from '@/components/ui';
-import { OrderCard, OrderDetailModal } from '@/components/staff';
+import { OrderCard, OrderDetailModal, NewOrderBanner } from '@/components/staff';
 import type { Order, OrderStatus } from '@/types';
 
 const statusFilters: { id: OrderStatus | 'all' | 'active'; label: string; icon: React.ElementType }[] = [
@@ -22,6 +22,7 @@ export default function StaffDashboardPage() {
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [refreshing, setRefreshing] = useState(false);
     const [soundEnabled, setSoundEnabled] = useState(false);
+    const [alertOrder, setAlertOrder] = useState<Order | null>(null);
 
     // Ref to track previous pending count for notifications
     const prevPendingRef = useRef(0);
@@ -59,16 +60,29 @@ export default function StaffDashboardPage() {
                 const shouldPlayRecurring = newPendingCount > 0 && timeSinceLastSound >= 15000; // 15 seconds
 
                 if (hasNewOrders) {
-                    playNotification('New order received');
-                    lastSoundTimeRef.current = now;
-                } else if (shouldPlayRecurring) {
+                    // Start alert for the newest pending order
                     const pendingOrders = newOrders.filter(o => o.status === 'pending');
-                    const itemDetails = pendingOrders
-                        .flatMap(o => o.items?.map(i => `${i.quantity} ${i.name}`) || [])
-                        .join(', ');
+                    if (pendingOrders.length > 0) {
+                        // Assuming newOrders is sorted by date desc, or we find the one that triggered this?
+                        // Simple approach: Alert for the first pending order found.
+                        setAlertOrder(pendingOrders[0]);
+                    }
 
-                    playNotification(`Please accept order. Items are: ${itemDetails}`);
                     lastSoundTimeRef.current = now;
+                } else {
+                    // Sync alert state: if we have an alertOrder but it's no longer pending (or gone), clear it.
+                    // Or if we have NO alertOrder but there ARE pending orders, should we trigger it?
+                    // User said "for new order". Persistent alarm implies we should keep it if pending.
+
+                    const currentPending = newOrders.filter(o => o.status === 'pending');
+                    if (currentPending.length > 0) {
+                        // If we don't have an alert, or the current alert is resolved, pick one.
+                        if (!alertOrder || !currentPending.find(o => o._id === alertOrder._id)) {
+                            setAlertOrder(currentPending[0]);
+                        }
+                    } else {
+                        setAlertOrder(null);
+                    }
                 }
 
                 prevPendingRef.current = newPendingCount;
@@ -90,7 +104,23 @@ export default function StaffDashboardPage() {
         const interval = setInterval(() => fetchOrders(false), 5000);
 
         return () => clearInterval(interval);
-    }, [soundEnabled]); // Re-bind effect if sound preference changes (mostly for closures, though using ref should be fine)
+    }, [soundEnabled]);
+
+    // Sound alert loop for urgent pending orders
+    useEffect(() => {
+        if (!alertOrder || !soundEnabled) return;
+
+        const playAlert = () => {
+            const audio = new Audio('/notification.mp3');
+            audio.play().catch(e => console.error("Audio play failed", e));
+            playNotification(`New order from table ${alertOrder.tableNumber}`);
+        };
+
+        playAlert(); // Play immediately
+        const interval = setInterval(playAlert, 15000); // Repeat every 15s
+
+        return () => clearInterval(interval);
+    }, [alertOrder, soundEnabled]);
 
     const handleUpdateOrder = async (orderId: string, status: OrderStatus, eta?: number, notes?: string) => {
         try {
@@ -108,9 +138,10 @@ export default function StaffDashboardPage() {
 
                 // Update ref count if status changed from pending
                 if (status !== 'pending') {
-                    // We don't necessarily need to decrement ref here because the next fetch will sync it, 
-                    // but syncing strictly is safer.
-                    // However, fetchOrders runs frequently so it will self-correct.
+                    // Update alert state immediately if the modified order was the alert
+                    if (alertOrder && alertOrder._id === orderId) {
+                        setAlertOrder(null);
+                    }
                 }
             }
         } catch (err) {
@@ -138,6 +169,10 @@ export default function StaffDashboardPage() {
 
     return (
         <div className="min-h-screen bg-gray-950">
+            <NewOrderBanner
+                order={alertOrder}
+                onAccept={(orderId) => handleUpdateOrder(orderId, 'accepted')}
+            />
             {/* Header */}
             <div className="sticky top-0 z-40 bg-gray-950/80 backdrop-blur-lg border-b border-gray-800">
                 <div className="max-w-6xl mx-auto px-4 py-4">
