@@ -196,6 +196,7 @@ export default function StaffDashboardPage() {
             <NewOrderAlertModal
                 orders={alertOrders}
                 onAccept={(orderId) => handleUpdateOrder(orderId, 'accepted')}
+                onReject={(orderId, reason) => handleUpdateOrder(orderId, 'cancelled', undefined, reason)}
             />
             {/* Header */}
             <div className="sticky top-0 z-40 bg-gray-950/80 backdrop-blur-lg border-b border-gray-800">

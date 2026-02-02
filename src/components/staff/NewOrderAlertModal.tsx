@@ -1,14 +1,35 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, CheckCircle, Clock } from 'lucide-react';
+import { Bell, CheckCircle, Clock, XCircle, X } from 'lucide-react';
 import { Order } from '@/types';
 
 interface NewOrderAlertModalProps {
     orders: Order[];
     onAccept: (orderId: string) => void;
+    onReject: (orderId: string, reason: string) => void;
 }
 
-export function NewOrderAlertModal({ orders, onAccept }: NewOrderAlertModalProps) {
+export function NewOrderAlertModal({ orders, onAccept, onReject }: NewOrderAlertModalProps) {
+    const [rejectingId, setRejectingId] = useState<string | null>(null);
+    const [rejectionReason, setRejectionReason] = useState('');
+
     if (!orders || orders.length === 0) return null;
+
+    const handleRejectClick = (orderId: string) => {
+        setRejectingId(orderId);
+        setRejectionReason('');
+    };
+
+    const handleCancelReject = () => {
+        setRejectingId(null);
+        setRejectionReason('');
+    };
+
+    const handleConfirmReject = (orderId: string) => {
+        if (!rejectionReason.trim()) return; // Prevent empty rejection
+        onReject(orderId, rejectionReason);
+        setRejectingId(null);
+    };
 
     return (
         <AnimatePresence>
@@ -35,10 +56,11 @@ export function NewOrderAlertModal({ orders, onAccept }: NewOrderAlertModalProps
                     {/* Scrollable Grid */}
                     <div className="overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4 px-2 pb-4 scrollbar-hide">
                         {orders.map((order, index) => {
-                            // Safely handle Items array just in case
                             const itemsSummary = (order.items || [])
                                 .map(i => `${i.quantity}x ${i.name}`)
                                 .join(', ');
+
+                            const isRejecting = rejectingId === order._id;
 
                             return (
                                 <motion.div
@@ -65,13 +87,52 @@ export function NewOrderAlertModal({ orders, onAccept }: NewOrderAlertModalProps
                                             </p>
                                         </div>
 
-                                        <button
-                                            onClick={() => onAccept(order._id)}
-                                            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-transform active:scale-95"
-                                        >
-                                            <CheckCircle className="w-5 h-5" />
-                                            Accept
-                                        </button>
+                                        {isRejecting ? (
+                                            <div className="space-y-3 bg-red-500/10 p-4 rounded-xl border border-red-500/30">
+                                                <label className="text-red-400 text-sm font-bold block mb-1">Reason for Rejection:</label>
+                                                <textarea
+                                                    value={rejectionReason}
+                                                    onChange={(e) => setRejectionReason(e.target.value)}
+                                                    placeholder="E.g. Item out of stock..."
+                                                    className="w-full bg-gray-950 border border-red-500/50 rounded-lg p-2 text-white text-sm focus:outline-none focus:border-red-500"
+                                                    rows={2}
+                                                    autoFocus
+                                                />
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={handleCancelReject}
+                                                        className="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-2 px-3 rounded-lg text-sm"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleConfirmReject(order._id)}
+                                                        disabled={!rejectionReason.trim()}
+                                                        className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-2 px-3 rounded-lg text-sm flex items-center justify-center gap-1"
+                                                    >
+                                                        <XCircle className="w-4 h-4" />
+                                                        Confirm Reject
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex gap-3">
+                                                <button
+                                                    onClick={() => handleRejectClick(order._id)}
+                                                    className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
+                                                >
+                                                    <XCircle className="w-5 h-5" />
+                                                    Reject
+                                                </button>
+                                                <button
+                                                    onClick={() => onAccept(order._id)}
+                                                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-transform active:scale-95 shadow-lg shadow-orange-500/20"
+                                                >
+                                                    <CheckCircle className="w-5 h-5" />
+                                                    Accept
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                     {/* Background glow */}
                                     <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent pointer-events-none" />
@@ -79,10 +140,6 @@ export function NewOrderAlertModal({ orders, onAccept }: NewOrderAlertModalProps
                             );
                         })}
                     </div>
-
-                    <p className="text-gray-500 text-center text-sm animate-pulse">
-                        Accept all pending orders to stop the alarm
-                    </p>
                 </div>
             </motion.div>
         </AnimatePresence>
