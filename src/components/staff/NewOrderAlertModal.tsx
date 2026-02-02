@@ -122,7 +122,7 @@ export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze, isDar
                         </motion.div>
 
                         {/* Scrollable Grid */}
-                        <div className="flex-1 overflow-y-auto grid grid-cols-1 gap-4 px-4 pb-4 min-h-0">
+                        <div className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4 px-4 pb-4 min-h-0">
                             {orders.map((order, index) => {
                                 const itemsSummary = (order.items || [])
                                     .map(i => `${i.quantity}x ${i.name}`)
@@ -144,10 +144,10 @@ export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze, isDar
                                             : 'border-orange-500/50'
                                             }`}
                                     >
-                                        <div className="p-6 relative z-10">
-                                            <div className="flex justify-between items-start mb-4">
+                                        <div className="p-4 relative z-10">
+                                            <div className="flex justify-between items-start mb-3">
                                                 <div>
-                                                    <h3 className="text-2xl font-bold text-orange-400">Table {order.tableNumber}</h3>
+                                                    <h3 className="text-xl font-bold text-orange-400">Table {order.tableNumber}</h3>
                                                     <span className="text-gray-400 text-sm">#{order.orderNumber}</span>
                                                 </div>
                                                 <span className="flex items-center gap-1 text-xs font-bold bg-orange-500/20 text-orange-400 px-2 py-1 rounded-lg border border-orange-500/30">
@@ -155,8 +155,8 @@ export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze, isDar
                                                 </span>
                                             </div>
 
-                                            <div className="bg-gray-800/50 rounded-xl p-4 mb-6 min-h-[80px]">
-                                                <p className="text-white font-medium leading-relaxed line-clamp-3">
+                                            <div className="bg-gray-800/50 rounded-xl p-3 mb-4 min-h-[60px]">
+                                                <p className="text-white text-sm font-medium leading-relaxed line-clamp-3">
                                                     {itemsSummary}
                                                 </p>
                                             </div>
