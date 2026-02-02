@@ -53,11 +53,6 @@ export function NewOrderAlertModal({ order, onAccept }: NewOrderAlertModalProps)
                                 <div className="text-white text-lg font-medium leading-relaxed">
                                     {itemsSummary}
                                 </div>
-                                {order.notes && (
-                                    <div className="pt-3 border-t border-gray-700 text-yellow-400 text-sm mt-3">
-                                        <span className="font-bold">Note:</span> {order.notes}
-                                    </div>
-                                )}
                             </div>
                         </div>
 
