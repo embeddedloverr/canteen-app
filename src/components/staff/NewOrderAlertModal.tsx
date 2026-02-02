@@ -7,9 +7,10 @@ interface NewOrderAlertModalProps {
     orders: Order[];
     onAccept: (orderId: string, eta?: number, notes?: string) => void;
     onReject: (orderId: string, reason: string) => void;
+    onSnooze: () => void;
 }
 
-export function NewOrderAlertModal({ orders, onAccept, onReject }: NewOrderAlertModalProps) {
+export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze }: NewOrderAlertModalProps) {
     // State to track which order is being interacted with and how
     const [actionState, setActionState] = useState<{
         orderId: string;
@@ -87,8 +88,8 @@ export function NewOrderAlertModal({ orders, onAccept, onReject }: NewOrderAlert
                                     animate={{ scale: 1, opacity: 1 }}
                                     transition={{ delay: index * 0.1 }}
                                     className={`bg-gray-900 border rounded-2xl shadow-xl overflow-hidden relative group transition-colors ${isActive
-                                            ? (isRejecting ? 'border-red-500' : 'border-green-500')
-                                            : 'border-orange-500/50'
+                                        ? (isRejecting ? 'border-red-500' : 'border-green-500')
+                                        : 'border-orange-500/50'
                                         }`}
                                 >
                                     <div className="p-6 relative z-10">
@@ -123,8 +124,8 @@ export function NewOrderAlertModal({ orders, onAccept, onReject }: NewOrderAlert
                                                                     key={min}
                                                                     onClick={() => setEta(min)}
                                                                     className={`px-3 py-1 rounded-lg text-sm font-bold transition-colors ${eta === min
-                                                                            ? 'bg-green-500 text-white'
-                                                                            : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                                                                        ? 'bg-green-500 text-white'
+                                                                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                                                                         }`}
                                                                 >
                                                                     {min}m
@@ -159,8 +160,8 @@ export function NewOrderAlertModal({ orders, onAccept, onReject }: NewOrderAlert
                                                         onClick={() => handleConfirm(order._id)}
                                                         disabled={isRejecting && !comment.trim()}
                                                         className={`flex-1 font-bold py-2 px-3 rounded-lg text-sm flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed ${isRejecting
-                                                                ? 'bg-red-600 hover:bg-red-700 text-white'
-                                                                : 'bg-green-600 hover:bg-green-700 text-white'
+                                                            ? 'bg-red-600 hover:bg-red-700 text-white'
+                                                            : 'bg-green-600 hover:bg-green-700 text-white'
                                                             }`}
                                                     >
                                                         {isRejecting ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}

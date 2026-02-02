@@ -23,6 +23,7 @@ export default function StaffDashboardPage() {
     const [refreshing, setRefreshing] = useState(false);
     const [soundEnabled, setSoundEnabled] = useState(true);
     const [alertOrders, setAlertOrders] = useState<Order[]>([]);
+    const [snoozeUntil, setSnoozeUntil] = useState<number>(0);
 
     // Ref to track previous pending count for notifications
     const prevPendingRef = useRef(0);
@@ -125,6 +126,9 @@ export default function StaffDashboardPage() {
 
     // Sound alert loop for urgent pending orders
     useEffect(() => {
+        // Check snooze
+        if (Date.now() < snoozeUntil) return;
+
         if (alertOrders.length === 0 || !soundEnabled) return;
 
         const playAlert = () => {
@@ -193,11 +197,14 @@ export default function StaffDashboardPage() {
 
     return (
         <div className="min-h-screen bg-gray-950">
-            <NewOrderAlertModal
-                orders={alertOrders}
-                onAccept={(orderId, eta, notes) => handleUpdateOrder(orderId, 'accepted', eta, notes)}
-                onReject={(orderId, reason) => handleUpdateOrder(orderId, 'cancelled', undefined, reason)}
-            />
+            {(!snoozeUntil || Date.now() > snoozeUntil) && (
+                <NewOrderAlertModal
+                    orders={alertOrders}
+                    onAccept={(orderId, eta, notes) => handleUpdateOrder(orderId, 'accepted', eta, notes)}
+                    onReject={(orderId, reason) => handleUpdateOrder(orderId, 'cancelled', undefined, reason)}
+                    onSnooze={() => setSnoozeUntil(Date.now() + 5 * 60 * 1000)} // 5 minutes
+                />
+            )}
             {/* Header */}
             <div className="sticky top-0 z-40 bg-gray-950/80 backdrop-blur-lg border-b border-gray-800">
                 <div className="max-w-6xl mx-auto px-4 py-4">
