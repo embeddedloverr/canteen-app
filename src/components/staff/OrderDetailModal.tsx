@@ -20,7 +20,7 @@ export function OrderDetailModal({ order, onClose, onUpdate }: OrderDetailModalP
     const [selectedEta, setSelectedEta] = useState<number>(15);
     const [staffNotes, setStaffNotes] = useState(order.staffNotes || '');
 
-    const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0);
+    const totalItems = (order.items || []).reduce((sum, item) => sum + item.quantity, 0);
 
     const handleStatusUpdate = async (status: OrderStatus) => {
         setLoading(true);
@@ -100,7 +100,7 @@ export function OrderDetailModal({ order, onClose, onUpdate }: OrderDetailModalP
                             </div>
                         </div>
                         <div className="space-y-2">
-                            {order.items.map((item, index) => (
+                            {(order.items || []).map((item, index) => (
                                 <div
                                     key={index}
                                     className="flex items-center justify-between py-2 border-b border-gray-800 last:border-0"

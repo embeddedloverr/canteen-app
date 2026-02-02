@@ -31,7 +31,7 @@ const statusColors = {
 
 export function OrderCard({ order, onSelect }: OrderCardProps) {
     const Icon = statusIcons[order.status];
-    const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0);
+    const totalItems = (order.items || []).reduce((sum, item) => sum + item.quantity, 0);
 
     return (
         <motion.div
@@ -82,10 +82,10 @@ export function OrderCard({ order, onSelect }: OrderCardProps) {
                 </div>
 
                 <div className="text-sm text-gray-400">
-                    <span className="font-medium text-gray-300">{order.items.length} item{order.items.length > 1 ? 's' : ''}</span>
+                    <span className="font-medium text-gray-300">{(order.items || []).length} item{(order.items || []).length > 1 ? 's' : ''}</span>
                     {' • '}
-                    {order.items.slice(0, 2).map(i => i.name).join(', ')}
-                    {order.items.length > 2 && ` +${order.items.length - 2} more`}
+                    {(order.items || []).slice(0, 2).map(i => i.name).join(', ')}
+                    {(order.items || []).length > 2 && ` +${order.items.length - 2} more`}
                 </div>
 
                 {order.eta && order.status !== 'delivered' && (
