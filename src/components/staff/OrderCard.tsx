@@ -97,6 +97,15 @@ export function OrderCard({ order, onSelect, isDarkMode = true }: OrderCardProps
                         </span>
                     </div>
                 )}
+
+                {order.status === 'delivered' && order.deliveredAt && order.createdAt && (
+                    <div className="mt-3 flex items-center gap-2 text-sm">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span className="text-green-600 font-medium">
+                            Delivered in {Math.round((new Date(order.deliveredAt).getTime() - new Date(order.createdAt).getTime()) / 60000)} minutes
+                        </span>
+                    </div>
+                )}
             </Card>
         </motion.div>
     );

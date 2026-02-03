@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import connectToDatabase from '@/lib/db/mongoose';
 import User from '@/models/User';
+import Canteen from '@/models/Canteen';
 import { auth } from '@/lib/auth';
 
 // GET /api/users - Get all staff users (admin only)
@@ -68,14 +69,26 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Validate canteen location for staff
-        if (role === 'staff' && canteenLocation) {
-            const validLocations = ['1st Floor Canteen', '2nd Floor Canteen'];
-            if (!validLocations.includes(canteenLocation)) {
-                return NextResponse.json(
-                    { success: false, error: 'Invalid canteen location' },
-                    { status: 400 }
-                );
+        // Validate canteen location/id for staff
+        let resolvedCanteenLocation = canteenLocation;
+        let canteenId = undefined;
+
+        if (role === 'staff') {
+            if (body.canteenId) {
+                const canteen = await Canteen.findById(body.canteenId);
+                if (!canteen) {
+                    return NextResponse.json(
+                        { success: false, error: 'Invalid canteen ID' },
+                        { status: 400 }
+                    );
+                }
+                canteenId = canteen._id;
+                resolvedCanteenLocation = canteen.name;
+            } else if (canteenLocation) {
+                // Fallback for legacy hardcoded locations or if just name is sent
+                // Ideally we want to move away from this, but keep for now or validate against DB if needed
+                // For now, if we have dynamic canteens, we might want to ensure the name exists?
+                // Let's stick to the plan: if canteenId sent, use it.
             }
         }
 
@@ -98,7 +111,8 @@ export async function POST(request: NextRequest) {
             password: hashedPassword,
             phone,
             role: role || 'staff',
-            canteenLocation: role === 'staff' ? canteenLocation : undefined,
+            canteenLocation: role === 'staff' ? resolvedCanteenLocation : undefined,
+            canteen: canteenId,
             isGuest: false,
             isActive: true,
         });

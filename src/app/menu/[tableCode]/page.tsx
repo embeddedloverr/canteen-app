@@ -3,11 +3,11 @@
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Search, MapPin, Clock, History } from 'lucide-react';
+import { Search, MapPin, History } from 'lucide-react';
 import { Input } from '@/components/ui';
-import { MenuItemCard, CategoryTabs, CartButton } from '@/components/customer';
+import { MenuItemCard, CartButton } from '@/components/customer';
 import { useCartStore } from '@/store';
-import type { MenuItem, MenuCategory } from '@/types';
+import type { MenuItem } from '@/types';
 
 interface MenuPageProps {
     params: Promise<{ tableCode: string }>;
@@ -16,7 +16,7 @@ interface MenuPageProps {
 export default function MenuPage({ params }: MenuPageProps) {
     const { tableCode } = use(params);
     const router = useRouter();
-    const { setTable, tableId } = useCartStore();
+    const { setTable } = useCartStore();
 
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
     const [filteredItems, setFilteredItems] = useState<MenuItem[]>([]);
@@ -24,9 +24,7 @@ export default function MenuPage({ params }: MenuPageProps) {
     const [error, setError] = useState<string | null>(null);
     const [tableInfo, setTableInfo] = useState<{ tableNumber: string; location: string } | null>(null);
 
-    const [selectedCategory, setSelectedCategory] = useState<MenuCategory | 'all'>('all');
     const [searchQuery, setSearchQuery] = useState('');
-    const [vegOnly, setVegOnly] = useState(false);
 
     // Fetch table info from QR code
     useEffect(() => {
@@ -76,13 +74,9 @@ export default function MenuPage({ params }: MenuPageProps) {
         fetchMenu();
     }, []);
 
-    // Filter items based on category, search, and veg filter
+    // Filter items based on search
     useEffect(() => {
         let filtered = [...menuItems];
-
-        if (selectedCategory !== 'all') {
-            filtered = filtered.filter(item => item.category === selectedCategory);
-        }
 
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
@@ -93,12 +87,8 @@ export default function MenuPage({ params }: MenuPageProps) {
             );
         }
 
-        if (vegOnly) {
-            filtered = filtered.filter(item => item.isVeg);
-        }
-
         setFilteredItems(filtered);
-    }, [menuItems, selectedCategory, searchQuery, vegOnly]);
+    }, [menuItems, searchQuery]);
 
     if (error) {
         return (
@@ -153,28 +143,6 @@ export default function MenuPage({ params }: MenuPageProps) {
                             className="pl-12"
                         />
                     </div>
-
-                    {/* Category Tabs */}
-                    <CategoryTabs
-                        selectedCategory={selectedCategory}
-                        onSelect={setSelectedCategory}
-                    />
-
-                    {/* Veg Filter */}
-                    <div className="flex items-center gap-2 mt-3">
-                        <button
-                            onClick={() => setVegOnly(!vegOnly)}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-all ${vegOnly
-                                    ? 'bg-green-500/20 text-green-400 border border-green-500'
-                                    : 'bg-gray-800 text-gray-400'
-                                }`}
-                        >
-                            <span className="w-3 h-3 rounded-sm border-2 border-current flex items-center justify-center">
-                                {vegOnly && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
-                            </span>
-                            Veg Only
-                        </button>
-                    </div>
                 </div>
             </div>
 
@@ -193,7 +161,7 @@ export default function MenuPage({ params }: MenuPageProps) {
                     <div className="text-center py-12">
                         <div className="text-6xl mb-4">🍽️</div>
                         <h2 className="text-xl font-bold text-white mb-2">No items found</h2>
-                        <p className="text-gray-400">Try adjusting your filters</p>
+                        <p className="text-gray-400">Try adjusting your search</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

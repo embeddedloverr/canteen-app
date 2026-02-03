@@ -8,7 +8,8 @@ export interface IUser extends Document {
     phone?: string;
     password?: string;
     role: 'customer' | 'staff' | 'admin';
-    canteenLocation?: '1st Floor Canteen' | '2nd Floor Canteen';
+    canteenLocation?: string;
+    canteen?: mongoose.Types.ObjectId; // Reference to Canteen model
     isGuest: boolean;
     isActive: boolean;
     createdAt: Date;
@@ -48,7 +49,10 @@ const UserSchema = new Schema<IUser>(
         },
         canteenLocation: {
             type: String,
-            enum: ['1st Floor Canteen', '2nd Floor Canteen'],
+        },
+        canteen: {
+            type: Schema.Types.ObjectId,
+            ref: 'Canteen',
         },
         isGuest: {
             type: Boolean,
@@ -77,7 +81,6 @@ UserSchema.statics.hashPassword = async function (password: string): Promise<str
 };
 
 // Index for faster lookups
-UserSchema.index({ email: 1 });
 UserSchema.index({ phone: 1 });
 UserSchema.index({ role: 1 });
 

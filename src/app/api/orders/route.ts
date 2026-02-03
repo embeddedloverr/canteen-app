@@ -4,6 +4,7 @@ import Order from '@/models/Order';
 import MenuItem from '@/models/MenuItem';
 import Table from '@/models/Table';
 import { generateOrderNumber } from '@/lib/utils';
+import { auth } from '@/lib/auth';
 
 // GET /api/orders - Get orders (filtered by role/user)
 export async function GET(request: NextRequest) {
@@ -34,6 +35,21 @@ export async function GET(request: NextRequest) {
 
         if (canteenLocation) {
             query.canteenLocation = canteenLocation;
+        }
+
+        // Staff restriction: Only show orders for their assigned canteen AND created today
+        const session = await auth();
+        if (session?.user?.role === 'staff') {
+            if (session.user.canteenLocation) {
+                query.canteenLocation = session.user.canteenLocation;
+            }
+
+            // Filter for today's orders (local time approximation or UTC day)
+            // Using setHours(0,0,0,0) might be tricky with timezone if server/client differ.
+            // For simplicity and robustness, let's grab last 24 hours or just start of today based on server time.
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            query.createdAt = { $gte: today };
         }
 
         const orders = await Order.find(query)

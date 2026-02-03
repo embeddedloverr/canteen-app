@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Users, Building2, Trash2, X, LogOut, UserCog, Shield } from 'lucide-react';
+import { Plus, Users, Building2, Trash2, X, LogOut, UserCog, Shield, Edit2 } from 'lucide-react';
 import { Button, Input, Card, Badge } from '@/components/ui';
 
 interface StaffUser {
@@ -14,18 +14,26 @@ interface StaffUser {
     phone?: string;
     role: 'staff' | 'admin';
     canteenLocation?: string;
+    canteen?: string;
     isActive: boolean;
     createdAt: string;
 }
 
-const canteenLocations = ['1st Floor Canteen', '2nd Floor Canteen'];
+interface Canteen {
+    _id: string;
+    name: string;
+    location: string;
+}
 
 export default function AdminStaffPage() {
     const router = useRouter();
     const { data: session, status } = useSession();
     const [users, setUsers] = useState<StaffUser[]>([]);
+    const [canteens, setCanteens] = useState<Canteen[]>([]);
     const [loading, setLoading] = useState(true);
+
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingUser, setEditingUser] = useState<StaffUser | null>(null);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +44,7 @@ export default function AdminStaffPage() {
         password: '',
         phone: '',
         role: 'staff',
-        canteenLocation: '1st Floor Canteen',
+        canteenId: '',
     });
 
     const fetchUsers = async () => {
@@ -48,9 +56,25 @@ export default function AdminStaffPage() {
             }
         } catch (err) {
             console.error('Failed to fetch users:', err);
-        } finally {
-            setLoading(false);
         }
+    };
+
+    const fetchCanteens = async () => {
+        try {
+            const res = await fetch('/api/canteens');
+            const data = await res.json();
+            if (data.success) {
+                setCanteens(data.data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch canteens:', err);
+        }
+    };
+
+    const init = async () => {
+        setLoading(true);
+        await Promise.all([fetchUsers(), fetchCanteens()]);
+        setLoading(false);
     };
 
     useEffect(() => {
@@ -58,42 +82,77 @@ export default function AdminStaffPage() {
             router.push('/login');
         } else if (session?.user?.role !== 'admin') {
             router.push('/staff');
-        } else {
-            fetchUsers();
+        } else if (status === 'authenticated') {
+            init();
         }
     }, [session, status, router]);
+
+    const handleEdit = (user: StaffUser) => {
+        setEditingUser(user);
+        setForm({
+            name: user.name,
+            email: user.email,
+            password: '', // Leave empty to keep unchanged
+            phone: user.phone || '',
+            role: user.role,
+            canteenId: user.canteen || '',
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setEditingUser(null);
+        setForm({
+            name: '',
+            email: '',
+            password: '',
+            phone: '',
+            role: 'staff',
+            canteenId: '',
+        });
+        setError(null);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
         setError(null);
 
+        // Validation
+        if (form.role === 'staff' && !form.canteenId) {
+            setError('Please select a canteen');
+            setSaving(false);
+            return;
+        }
+
         try {
-            const res = await fetch('/api/users', {
-                method: 'POST',
+            const url = editingUser ? `/api/users/${editingUser._id}` : '/api/users';
+            const method = editingUser ? 'PATCH' : 'POST';
+
+            const payload: any = { ...form };
+            if (editingUser && !payload.password) {
+                delete payload.password;
+            }
+
+            const res = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form),
+                body: JSON.stringify(payload),
             });
 
             const data = await res.json();
 
             if (!data.success) {
-                setError(data.error || 'Failed to create account');
+                setError(data.error || `Failed to ${editingUser ? 'update' : 'create'} account`);
+                setSaving(false);
                 return;
             }
 
             await fetchUsers();
-            setIsModalOpen(false);
-            setForm({
-                name: '',
-                email: '',
-                password: '',
-                phone: '',
-                role: 'staff',
-                canteenLocation: '1st Floor Canteen',
-            });
+            handleCloseModal();
         } catch (err) {
-            setError('Failed to create account');
+            setError(`Failed to ${editingUser ? 'update' : 'create'} account`);
         } finally {
             setSaving(false);
         }
@@ -244,15 +303,26 @@ export default function AdminStaffPage() {
                                         <p className="text-sm text-gray-500 mb-3">{user.phone}</p>
                                     )}
                                     {user.isActive && (
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={() => handleDelete(user._id)}
-                                            className="text-red-500 hover:text-red-400"
-                                        >
-                                            <Trash2 className="w-4 h-4 mr-1" />
-                                            Deactivate
-                                        </Button>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                size="sm"
+                                                variant="secondary"
+                                                onClick={() => handleEdit(user)}
+                                                className="flex-1"
+                                            >
+                                                <Edit2 className="w-4 h-4 mr-1" />
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={() => handleDelete(user._id)}
+                                                className="text-red-500 hover:text-red-400 flex-1 border border-red-500/20"
+                                            >
+                                                <Trash2 className="w-4 h-4 mr-1" />
+                                                Deactivate
+                                            </Button>
+                                        </div>
                                     )}
                                 </Card>
                             ))}
@@ -269,7 +339,7 @@ export default function AdminStaffPage() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-                        onClick={() => setIsModalOpen(false)}
+                        onClick={handleCloseModal}
                     >
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
@@ -279,9 +349,9 @@ export default function AdminStaffPage() {
                             className="w-full max-w-md bg-gray-900 rounded-2xl border border-gray-800 shadow-2xl"
                         >
                             <div className="border-b border-gray-800 p-4 flex items-center justify-between">
-                                <h2 className="text-xl font-bold text-white">Add New Staff</h2>
+                                <h2 className="text-xl font-bold text-white">{editingUser ? 'Edit Staff' : 'Add New Staff'}</h2>
                                 <button
-                                    onClick={() => setIsModalOpen(false)}
+                                    onClick={handleCloseModal}
                                     className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
                                 >
                                     <X className="w-5 h-5 text-white" />
@@ -309,10 +379,10 @@ export default function AdminStaffPage() {
                                 <Input
                                     label="Password"
                                     type="password"
-                                    placeholder="Minimum 6 characters"
+                                    placeholder={editingUser ? "Leave empty to keep unchanged" : "Minimum 6 characters"}
                                     value={form.password}
                                     onChange={e => setForm({ ...form, password: e.target.value })}
-                                    required
+                                    required={!editingUser}
                                 />
 
                                 <Input
@@ -326,7 +396,7 @@ export default function AdminStaffPage() {
                                     <label className="block text-sm font-medium text-gray-300 mb-2">Role</label>
                                     <select
                                         value={form.role}
-                                        onChange={e => setForm({ ...form, role: e.target.value })}
+                                        onChange={e => setForm({ ...form, role: e.target.value as 'staff' | 'admin' })}
                                         className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500"
                                     >
                                         <option value="staff">Staff</option>
@@ -338,13 +408,19 @@ export default function AdminStaffPage() {
                                     <div>
                                         <label className="block text-sm font-medium text-gray-300 mb-2">Canteen</label>
                                         <select
-                                            value={form.canteenLocation}
-                                            onChange={e => setForm({ ...form, canteenLocation: e.target.value })}
+                                            value={form.canteenId}
+                                            onChange={e => setForm({ ...form, canteenId: e.target.value })}
                                             className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500"
+                                            required
                                         >
-                                            {canteenLocations.map(loc => (
-                                                <option key={loc} value={loc}>{loc}</option>
-                                            ))}
+                                            <option value="">Select Canteen</option>
+                                            {canteens.length > 0 ? (
+                                                canteens.map(canteen => (
+                                                    <option key={canteen._id} value={canteen._id}>{canteen.name}</option>
+                                                ))
+                                            ) : (
+                                                <option disabled>No canteens available</option>
+                                            )}
                                         </select>
                                         <p className="text-xs text-gray-500 mt-1">Staff will manage orders for this canteen</p>
                                     </div>
@@ -357,11 +433,11 @@ export default function AdminStaffPage() {
                                 )}
 
                                 <div className="flex gap-3 pt-4">
-                                    <Button type="button" variant="outline" className="flex-1" onClick={() => setIsModalOpen(false)}>
+                                    <Button type="button" variant="outline" className="flex-1" onClick={handleCloseModal}>
                                         Cancel
                                     </Button>
                                     <Button type="submit" className="flex-1" isLoading={saving}>
-                                        Create Account
+                                        {editingUser ? 'Update Account' : 'Create Account'}
                                     </Button>
                                 </div>
                             </form>

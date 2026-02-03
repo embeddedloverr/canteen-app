@@ -124,9 +124,7 @@ export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze, isDar
                         {/* Scrollable Grid */}
                         <div className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4 px-4 pb-4 min-h-0">
                             {orders.map((order, index) => {
-                                const itemsSummary = (order.items || [])
-                                    .map(i => `${i.quantity}x ${i.name}`)
-                                    .join(', ');
+                                // Summary removed in favor of detailed list
 
                                 const isActive = actionState?.orderId === order._id;
                                 const isRejecting = isActive && actionState?.type === 'reject';
@@ -155,10 +153,23 @@ export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze, isDar
                                                 </span>
                                             </div>
 
-                                            <div className="bg-gray-800/50 rounded-xl p-3 mb-4 min-h-[60px]">
-                                                <p className="text-white text-sm font-medium leading-relaxed line-clamp-3">
-                                                    {itemsSummary}
-                                                </p>
+                                            <div className="bg-gray-800/50 rounded-xl p-3 mb-4 min-h-[60px] max-h-[120px] overflow-y-auto custom-scrollbar">
+                                                <div className="space-y-2">
+                                                    {(order.items || []).map((item, idx) => (
+                                                        <div key={idx} className="text-sm">
+                                                            <div className="flex justify-between items-start">
+                                                                <span className="text-white font-medium">
+                                                                    {item.quantity}x {item.name}
+                                                                </span>
+                                                            </div>
+                                                            {item.specialInstructions && (
+                                                                <p className="text-xs text-orange-300 italic mt-0.5 pl-4 border-l-2 border-orange-500/30">
+                                                                    "{item.specialInstructions}"
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
 
                                             {isActive ? (

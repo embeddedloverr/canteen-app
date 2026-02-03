@@ -4,6 +4,8 @@ import connectToDatabase from '@/lib/db/mongoose';
 import MenuItem from '@/models/MenuItem';
 import Table from '@/models/Table';
 import User from '@/models/User';
+import Order from '@/models/Order';
+import Canteen from '@/models/Canteen';
 import { generateTableCode } from '@/lib/utils';
 
 // Sample menu items data
@@ -238,6 +240,37 @@ export async function POST() {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return NextResponse.json(
             { success: false, error: 'Failed to seed database', details: errorMessage },
+            { status: 500 }
+        );
+    }
+}
+
+// DELETE /api/seed - Clear all mock data (Keep Users and Canteens)
+export async function DELETE() {
+    try {
+        await connectToDatabase();
+
+        // Clear transactional and mock data
+        const orders = await Order.deleteMany({});
+        const menuItems = await MenuItem.deleteMany({});
+        const tables = await Table.deleteMany({});
+
+        // Note: Canteens are preserved as they might be linked to Users manually now
+        // Users are preserved as requested
+
+        return NextResponse.json({
+            success: true,
+            message: 'Mock data cleared successfully (Users preservation enabled)',
+            deleted: {
+                orders: orders.deletedCount,
+                menuItems: menuItems.deletedCount,
+                tables: tables.deletedCount,
+            }
+        });
+    } catch (error) {
+        console.error('Error clearing database:', error);
+        return NextResponse.json(
+            { success: false, error: 'Failed to clear database' },
             { status: 500 }
         );
     }

@@ -30,6 +30,8 @@ export default function StaffDashboardPage() {
     const prevPendingRef = useRef(0);
     // Ref to track last sound time for recurring notifications
     const lastSoundTimeRef = useRef(0);
+    // Track last announcement time for late orders (orderId -> timestamp)
+    const lateOrderAnnouncementsRef = useRef<Map<string, number>>(new Map());
 
     const playNotification = (text: string) => {
         if (!soundEnabled) return;
@@ -174,6 +176,57 @@ export default function StaffDashboardPage() {
         return () => clearInterval(interval);
     }, [alertOrders.length, soundEnabled]); // Depend on length so if order count changes (e.g. 1 accepted), we might re-trigger or at least keep loop alive.
 
+    // Late Order Alert (Accepted but pending delivery > ETA)
+    useEffect(() => {
+        if (!soundEnabled) return;
+
+        const checkLateOrders = () => {
+            const now = Date.now();
+            const lateOrders = orders.filter(o => {
+                // Must be accepted (not pending or delivered)
+                if (o.status !== 'accepted') return false;
+
+                // Use ETA if available, otherwise fallback to 15 mins after acceptedAt
+                // The new requirement is "after ETA"
+                let targetTime = 0;
+                if (o.eta) {
+                    targetTime = new Date(o.eta).getTime();
+                } else if (o.acceptedAt) {
+                    targetTime = new Date(o.acceptedAt).getTime() + 15 * 60 * 1000;
+                } else {
+                    return false;
+                }
+
+                return now > targetTime;
+            });
+
+            // Find orders that need announcement (either never announced or > 1 min since last)
+            const ordersToAnnounce = lateOrders.filter(o => {
+                const lastAnnounce = lateOrderAnnouncementsRef.current.get(o._id) || 0;
+                return (now - lastAnnounce) > 60000; // 1 minute
+            });
+
+            if (ordersToAnnounce.length > 0) {
+                // Announce
+                const text = `Warning. ${ordersToAnnounce.length} order${ordersToAnnounce.length > 1 ? 's are' : ' is'} undelivered. Please confirm the delivery.`;
+                playNotification(text);
+
+                // Update timestamps
+                ordersToAnnounce.forEach(o => {
+                    lateOrderAnnouncementsRef.current.set(o._id, now);
+                });
+            }
+
+            // Cleanup: Removed orders from map using a simple way? 
+            // Or just let them sit (map size won't explode excessively for daily reset)
+            // Ideally we remove delivered/cancelled orders from the map to keep it clean.
+            // But doing it here might be complex. Let's do it in handleUpdateOrder.
+        };
+
+        // Check immediately whenever orders change (pooling every 5s drives this)
+        checkLateOrders();
+    }, [orders, soundEnabled]);
+
     const handleUpdateOrder = async (orderId: string, status: OrderStatus, eta?: number, notes?: string) => {
         try {
             const res = await fetch(`/api/orders/${orderId}`, {
@@ -192,6 +245,8 @@ export default function StaffDashboardPage() {
                 if (status !== 'pending') {
                     // Remove from alertOrders immediately
                     setAlertOrders(prev => prev.filter(o => o._id !== orderId));
+                    // Cleanup announcement tracker
+                    lateOrderAnnouncementsRef.current.delete(orderId);
                 }
             }
         } catch (err) {

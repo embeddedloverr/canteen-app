@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/db/mongoose';
 import User from '@/models/User';
+import Canteen from '@/models/Canteen';
 import { auth } from '@/lib/auth';
 
 // GET /api/users/[id] - Get a single user
@@ -62,7 +63,7 @@ export async function PATCH(
 
         const { id } = await params;
         const body = await request.json();
-        const { name, phone, canteenLocation, isActive } = body;
+        const { name, phone, canteenLocation, canteenId, isActive } = body;
 
         const user = await User.findById(id);
         if (!user) {
@@ -75,7 +76,23 @@ export async function PATCH(
         // Update fields
         if (name !== undefined) user.name = name;
         if (phone !== undefined) user.phone = phone;
-        if (canteenLocation !== undefined) user.canteenLocation = canteenLocation;
+
+        // Handle canteen update
+        if (canteenId) {
+            const canteen = await Canteen.findById(canteenId);
+            if (!canteen) {
+                return NextResponse.json(
+                    { success: false, error: 'Invalid canteen ID' },
+                    { status: 400 }
+                );
+            }
+            user.canteen = canteen._id;
+            user.canteenLocation = canteen.name;
+        } else if (canteenLocation !== undefined) {
+            // Fallback for string-only updates if needed, though UI should send canteenId
+            user.canteenLocation = canteenLocation;
+        }
+
         if (isActive !== undefined) user.isActive = isActive;
 
         await user.save();
