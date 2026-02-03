@@ -33,7 +33,7 @@ const TableSchema = new Schema<ITable>(
             type: String,
             required: [true, 'Canteen location is required'],
             trim: true,
-            enum: ['1st Floor Canteen', '2nd Floor Canteen'],
+            // enum removed to allow dynamic canteen names
             default: '1st Floor Canteen',
         },
         capacity: {
@@ -54,6 +54,11 @@ const TableSchema = new Schema<ITable>(
 // Index for QR code lookup
 TableSchema.index({ qrCode: 1 });
 TableSchema.index({ canteenLocation: 1 });
+
+// Prevent model caching in development to allow schema updates
+if (process.env.NODE_ENV === 'development') {
+    delete mongoose.models.Table;
+}
 
 const Table: Model<ITable> = mongoose.models.Table || mongoose.model<ITable>('Table', TableSchema);
 

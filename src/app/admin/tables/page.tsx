@@ -27,7 +27,7 @@ export default function AdminTablesPage() {
 
     const fetchTables = async () => {
         try {
-            const res = await fetch('/api/tables');
+            const res = await fetch('/api/tables', { cache: 'no-store' });
             const data = await res.json();
             if (data.success) {
                 setTables(data.data);

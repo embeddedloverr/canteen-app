@@ -39,11 +39,10 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { tableNumber, location, canteenLocation, capacity } = body;
 
-        // Validate canteen location
-        const validCanteenLocations = ['1st Floor Canteen', '2nd Floor Canteen'];
-        if (canteenLocation && !validCanteenLocations.includes(canteenLocation)) {
+        // Validate canteen location - Removed hardcoded check to support dynamic canteens
+        if (!canteenLocation) {
             return NextResponse.json(
-                { success: false, error: 'Invalid canteen location. Must be 1st Floor Canteen or 2nd Floor Canteen.' },
+                { success: false, error: 'Canteen location is required.' },
                 { status: 400 }
             );
         }

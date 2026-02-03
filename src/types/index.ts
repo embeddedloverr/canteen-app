@@ -39,7 +39,8 @@ export interface Table {
     createdAt: string;
 }
 
-export type CanteenLocation = '1st Floor Canteen' | '2nd Floor Canteen';
+// export type CanteenLocation = '1st Floor Canteen' | '2nd Floor Canteen';
+export type CanteenLocation = string;
 
 // Canteen types
 export interface Canteen {
