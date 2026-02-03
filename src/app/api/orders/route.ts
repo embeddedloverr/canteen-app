@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
             customerName: customerName || 'Guest',
             table: table._id,
             tableNumber: table.tableNumber,
-            canteenLocation: table.canteenLocation || table.location,
+            canteenLocation: table.canteenLocation, // Strictly use the canteen location defined in the table
             items: orderItems,
             status: 'pending',
         });
