@@ -56,9 +56,7 @@ TableSchema.index({ qrCode: 1 });
 TableSchema.index({ canteenLocation: 1 });
 
 // Prevent model caching in development to allow schema updates
-if (process.env.NODE_ENV === 'development') {
-    delete mongoose.models.Table;
-}
+
 
 const Table: Model<ITable> = mongoose.models.Table || mongoose.model<ITable>('Table', TableSchema);
 
