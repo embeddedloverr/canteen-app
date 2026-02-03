@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Providers } from "./providers";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 const inter = Inter({
@@ -29,8 +30,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} font-sans antialiased bg-gray-950 text-white`}>
-        <Providers>{children}</Providers>
+      <body className={`${inter.variable} font-sans antialiased bg-gray-950 text-white min-h-screen flex flex-col`}>
+        <Providers>
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Building2, UtensilsCrossed, QrCode, BarChart3, Settings, Users } from 'lucide-react';
+import { signOut } from 'next-auth/react';
+import { Building2, UtensilsCrossed, QrCode, BarChart3, Settings, Users, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -55,6 +56,15 @@ export default function AdminLayout({
                                     </Link>
                                 );
                             })}
+
+                            {/* Logout Button */}
+                            <button
+                                onClick={() => signOut({ callbackUrl: '/login' })}
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                            >
+                                <LogOut className="w-4 h-4" />
+                                <span className="hidden sm:inline">Logout</span>
+                            </button>
                         </div>
                     </div>
                 </div>

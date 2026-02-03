@@ -151,7 +151,7 @@ export default function StaffDashboardPage() {
             const visibleOrders = alertOrders.slice(0, 3); // Limit to 3
             const details = visibleOrders.map(o => {
                 const items = (o.items || []).map(i => i.name).join(', ');
-                return `Table ${o.tableNumber}, ${items}`;
+                return `${o.tableNumber}, ${items}`;
             }).join('. Next, ');
 
             let text = `${alertOrders.length} new order${alertOrders.length > 1 ? 's' : ''}! ${details}`;
