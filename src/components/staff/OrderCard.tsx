@@ -61,7 +61,7 @@ export function OrderCard({ order, onSelect, isDarkMode = true }: OrderCardProps
                                 {getStatusLabel(order.status)}
                             </Badge>
                         </div>
-                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Table {order.tableNumber}</p>
+                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{order.tableNumber}</p>
                     </div>
                     <div className="text-right">
                         <div className="flex items-center gap-1 text-orange-500 font-bold">
@@ -78,7 +78,7 @@ export function OrderCard({ order, onSelect, isDarkMode = true }: OrderCardProps
                     </div>
                     <div>
                         <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{order.customerName}</p>
-                        <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>Table {order.tableNumber}</p>
+                        <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>{order.tableNumber}</p>
                     </div>
                 </div>
 

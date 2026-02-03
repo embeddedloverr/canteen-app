@@ -87,7 +87,7 @@ export function OrderDetailModal({ order, onClose, onUpdate }: OrderDetailModalP
                     <Card className="p-4">
                         <h3 className="text-sm font-medium text-gray-400 mb-2">Customer</h3>
                         <p className="text-white font-semibold">{order.customerName}</p>
-                        <p className="text-gray-500 text-sm mt-1">Table {order.tableNumber}</p>
+                        <p className="text-gray-500 text-sm mt-1">{order.tableNumber}</p>
                     </Card>
 
                     {/* Order Items */}

@@ -145,7 +145,7 @@ export function NewOrderAlertModal({ orders, onAccept, onReject, onSnooze, isDar
                                         <div className="p-4 relative z-10">
                                             <div className="flex justify-between items-start mb-3">
                                                 <div>
-                                                    <h3 className="text-xl font-bold text-orange-400">Table {order.tableNumber}</h3>
+                                                    <h3 className="text-xl font-bold text-orange-400">{order.tableNumber}</h3>
                                                     <span className="text-gray-400 text-sm">#{order.orderNumber}</span>
                                                 </div>
                                                 <span className="flex items-center gap-1 text-xs font-bold bg-orange-500/20 text-orange-400 px-2 py-1 rounded-lg border border-orange-500/30">

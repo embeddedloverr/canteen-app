@@ -171,7 +171,7 @@ export default function StaffDashboardPage() {
         // We can just play immediately and then interval.
         playAlert();
 
-        const interval = setInterval(playAlert, 15000); // Repeat every 15s
+        const interval = setInterval(playAlert, 30000); // Repeat every 30s
 
         return () => clearInterval(interval);
     }, [alertOrders.length, soundEnabled]); // Depend on length so if order count changes (e.g. 1 accepted), we might re-trigger or at least keep loop alive.

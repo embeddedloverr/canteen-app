@@ -35,7 +35,7 @@ export function NewOrderBanner({ order, onAccept }: NewOrderBannerProps) {
                             <h3 className="text-lg font-bold flex items-center gap-2">
                                 New Order #{order.orderNumber}
                                 <span className="text-sm font-normal bg-white/20 px-2 py-0.5 rounded">
-                                    Table {order.tableNumber}
+                                    {order.tableNumber}
                                 </span>
                             </h3>
                             <p className="text-orange-100 text-sm max-w-xl truncate">
