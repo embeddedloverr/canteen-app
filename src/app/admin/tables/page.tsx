@@ -21,7 +21,7 @@ export default function AdminTablesPage() {
     const [form, setForm] = useState({
         tableNumber: '',
         location: 'Main Hall',
-        canteenLocation: '1st Floor Canteen',
+        canteenLocation: '', // Will be set dynamically from fetched canteens
         capacity: '4',
     });
 
@@ -45,9 +45,9 @@ export default function AdminTablesPage() {
             const data = await res.json();
             if (data.success) {
                 setCanteens(data.data);
-                // Set default location if available and not set
-                if (data.data.length > 0 && !form.canteenLocation) {
-                    setForm(prev => ({ ...prev, canteenLocation: data.data[0].name }));
+                // Set default canteen location if available and not yet set
+                if (data.data.length > 0) {
+                    setForm(prev => ({ ...prev, canteenLocation: prev.canteenLocation || data.data[0].name }));
                 }
             }
         } catch (err) {
@@ -95,7 +95,9 @@ export default function AdminTablesPage() {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingTable(null);
-        setForm({ tableNumber: '', location: 'Main Hall', canteenLocation: '1st Floor Canteen', capacity: '4' });
+        // Use first canteen from list as default, or empty string
+        const defaultCanteen = canteens.length > 0 ? canteens[0].name : '';
+        setForm({ tableNumber: '', location: 'Main Hall', canteenLocation: defaultCanteen, capacity: '4' });
     };
 
     const handleEdit = (table: Table) => {
@@ -103,7 +105,7 @@ export default function AdminTablesPage() {
         setForm({
             tableNumber: table.tableNumber,
             location: table.location || 'Main Hall',
-            canteenLocation: table.canteenLocation || '1st Floor Canteen',
+            canteenLocation: table.canteenLocation || (canteens.length > 0 ? canteens[0].name : ''),
             capacity: String(table.capacity || 4),
         });
         setIsModalOpen(true);
@@ -179,7 +181,7 @@ export default function AdminTablesPage() {
 
     // Group tables by canteen location
     const tablesByLocation = tables.reduce((acc, table) => {
-        const loc = table.canteenLocation || '1st Floor Canteen';
+        const loc = table.canteenLocation || 'Unknown';
         if (!acc[loc]) acc[loc] = [];
         acc[loc].push(table);
         return acc;
