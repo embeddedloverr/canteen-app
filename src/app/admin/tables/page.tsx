@@ -143,10 +143,58 @@ export default function AdminTablesPage() {
     const handleDownloadQR = () => {
         if (!qrModalData) return;
 
-        const link = document.createElement('a');
-        link.download = `table-${qrModalData.tableNumber}-qr.png`;
-        link.href = qrModalData.qrDataUrl;
-        link.click();
+        // Create canvas with full info
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const padding = 40;
+        const qrSize = 280;
+        const canvasWidth = qrSize + padding * 2;
+        const canvasHeight = qrSize + padding * 2 + 120; // Extra space for text
+
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+
+        // White background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+        // Load QR image and draw everything
+        const qrImage = new Image();
+        qrImage.onload = () => {
+            // Title - Table Number
+            ctx.fillStyle = '#1f2937';
+            ctx.font = 'bold 24px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Table ${qrModalData.tableNumber}`, canvasWidth / 2, 35);
+
+            // Canteen Location
+            ctx.fillStyle = '#ea580c';
+            ctx.font = '16px Arial, sans-serif';
+            ctx.fillText(qrModalData.canteenLocation, canvasWidth / 2, 58);
+
+            // Instruction
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '12px Arial, sans-serif';
+            ctx.fillText('Scan to order • Staff delivers to table', canvasWidth / 2, 78);
+
+            // QR Code
+            ctx.drawImage(qrImage, padding, 90, qrSize, qrSize);
+
+            // URL at bottom
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '10px Arial, sans-serif';
+            const shortUrl = qrModalData.menuUrl.length > 45 ? qrModalData.menuUrl.slice(0, 45) + '...' : qrModalData.menuUrl;
+            ctx.fillText(shortUrl, canvasWidth / 2, canvasHeight - 15);
+
+            // Download
+            const link = document.createElement('a');
+            link.download = `table-${qrModalData.tableNumber}-qr.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        };
+        qrImage.src = qrModalData.qrDataUrl;
     };
 
     const handleDelete = async (id: string) => {
