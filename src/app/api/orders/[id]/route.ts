@@ -97,3 +97,55 @@ export async function PATCH(
         );
     }
 }
+
+// DELETE /api/orders/[id] - Delete an order (Admin only)
+export async function DELETE(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        // Check admin authorization
+        const { auth } = await import('@/lib/auth');
+        const session = await auth();
+
+        if (!session?.user || session.user.role !== 'admin') {
+            return NextResponse.json(
+                { success: false, error: 'Unauthorized. Admin access required.' },
+                { status: 403 }
+            );
+        }
+
+        await connectToDatabase();
+
+        const { id } = await params;
+        const order = await Order.findById(id);
+
+        if (!order) {
+            return NextResponse.json(
+                { success: false, error: 'Order not found' },
+                { status: 404 }
+            );
+        }
+
+        // Only allow deletion of delivered or cancelled orders
+        if (!['delivered', 'cancelled'].includes(order.status)) {
+            return NextResponse.json(
+                { success: false, error: 'Only delivered or cancelled orders can be deleted' },
+                { status: 400 }
+            );
+        }
+
+        await Order.findByIdAndDelete(id);
+
+        return NextResponse.json({
+            success: true,
+            message: 'Order deleted successfully',
+        });
+    } catch (error) {
+        console.error('Error deleting order:', error);
+        return NextResponse.json(
+            { success: false, error: 'Failed to delete order' },
+            { status: 500 }
+        );
+    }
+}

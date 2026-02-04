@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Clock, CheckCircle, Package, Bell, LogOut, Volume2, VolumeX, Sun, Moon } from 'lucide-react';
+import { RefreshCw, Clock, CheckCircle, Package, Bell, LogOut, Volume2, VolumeX, Sun, Moon, BellOff } from 'lucide-react';
 import { Badge } from '@/components/ui';
 import { OrderCard, OrderDetailModal, NewOrderAlertModal } from '@/components/staff';
 import type { Order, OrderStatus } from '@/types';
@@ -25,6 +25,7 @@ export default function StaffDashboardPage() {
     const [isDarkMode, setIsDarkMode] = useState(true);
     const [alertOrders, setAlertOrders] = useState<Order[]>([]);
     const [snoozeUntil, setSnoozeUntil] = useState<number>(0);
+    const [popupEnabled, setPopupEnabled] = useState<boolean>(true);
 
     // Ref to track previous pending count for notifications
     const prevPendingRef = useRef(0);
@@ -32,6 +33,8 @@ export default function StaffDashboardPage() {
     const lastSoundTimeRef = useRef(0);
     // Track last announcement time for late orders (orderId -> timestamp)
     const lateOrderAnnouncementsRef = useRef<Map<string, number>>(new Map());
+    // Track mid-ETA reminder announcements (orderId -> timestamp)
+    const midEtaAnnouncementsRef = useRef<Map<string, number>>(new Map());
 
     const playNotification = (text: string) => {
         if (!soundEnabled) return;
@@ -147,12 +150,20 @@ export default function StaffDashboardPage() {
         if (alertOrders.length === 0 || !soundEnabled) return;
 
         const playAlert = () => {
-            // Construct detailed announcement
+            // Construct detailed announcement with cooking instructions
             const visibleOrders = alertOrders.slice(0, 3); // Limit to 3
             const details = visibleOrders.map(o => {
-                const items = (o.items || []).map(i => i.name).join(', ');
-                return `${o.tableNumber}, ${items}`;
-            }).join('. Next, ');
+                const location = o.canteenLocation || 'Canteen';
+                const itemDetails = (o.items || []).map(i => {
+                    let itemText = i.name;
+                    // Include special instructions (cooking notes) if present
+                    if (i.specialInstructions) {
+                        itemText += `, note: ${i.specialInstructions}`;
+                    }
+                    return itemText;
+                }).join(', ');
+                return `${location}, ${o.tableNumber}. Items: ${itemDetails}`;
+            }).join('. Next order, ');
 
             let text = `${alertOrders.length} new order${alertOrders.length > 1 ? 's' : ''}! ${details}`;
             if (alertOrders.length > 3) text += `. And ${alertOrders.length - 3} more.`;
@@ -207,8 +218,12 @@ export default function StaffDashboardPage() {
             });
 
             if (ordersToAnnounce.length > 0) {
-                // Announce
-                const text = `Warning. ${ordersToAnnounce.length} order${ordersToAnnounce.length > 1 ? 's are' : ' is'} undelivered. Please confirm the delivery.`;
+                // Announce with location details
+                const orderDetails = ordersToAnnounce.slice(0, 3).map(o => {
+                    const location = o.canteenLocation || 'Canteen';
+                    return `${o.orderNumber} at ${location}, ${o.tableNumber}`;
+                }).join('. ');
+                const text = `Warning. ${ordersToAnnounce.length} order${ordersToAnnounce.length > 1 ? 's are' : ' is'} overdue and undelivered. ${orderDetails}. Please confirm the delivery.`;
                 playNotification(text);
 
                 // Update timestamps
@@ -226,6 +241,65 @@ export default function StaffDashboardPage() {
         // Check immediately whenever orders change (pooling every 5s drives this)
         checkLateOrders();
     }, [orders, soundEnabled]);
+
+    // Mid-ETA Gentle Reminder
+    useEffect(() => {
+        if (!soundEnabled) return;
+
+        const checkMidEtaReminders = () => {
+            const now = Date.now();
+            const ordersNeedingReminder = orders.filter(o => {
+                // Must be accepted (in preparation)
+                if (o.status !== 'accepted') return false;
+                if (!o.eta || !o.acceptedAt) return false;
+
+                const etaTime = new Date(o.eta).getTime();
+                const acceptedTime = new Date(o.acceptedAt).getTime();
+                const totalDuration = etaTime - acceptedTime;
+                const midTime = acceptedTime + (totalDuration / 2);
+
+                // Check if we're past the mid-point but before ETA
+                if (now < midTime || now > etaTime) return false;
+
+                // Check if already reminded
+                const lastReminder = midEtaAnnouncementsRef.current.get(o._id) || 0;
+                return lastReminder === 0; // Only remind once per order
+            });
+
+            if (ordersNeedingReminder.length > 0) {
+                ordersNeedingReminder.forEach(o => {
+                    const location = o.canteenLocation || 'Canteen';
+                    const items = (o.items || []).map(i => {
+                        let itemText = `${i.quantity}x ${i.name}`;
+                        if (i.specialInstructions) {
+                            itemText += `, note: ${i.specialInstructions}`;
+                        }
+                        return itemText;
+                    }).join(', ');
+                    const text = `Gentle reminder. Order ${o.orderNumber} for ${location}, ${o.tableNumber}. Items: ${items}. Please prepare for delivery soon.`;
+                    playNotification(text);
+                    midEtaAnnouncementsRef.current.set(o._id, now);
+                });
+            }
+        };
+
+        checkMidEtaReminders();
+    }, [orders, soundEnabled]);
+
+    // Load popupEnabled from localStorage on mount
+    useEffect(() => {
+        const stored = localStorage.getItem('staffPopupEnabled');
+        if (stored !== null) {
+            setPopupEnabled(stored === 'true');
+        }
+    }, []);
+
+    // Save popupEnabled to localStorage when it changes
+    const togglePopup = () => {
+        const newValue = !popupEnabled;
+        setPopupEnabled(newValue);
+        localStorage.setItem('staffPopupEnabled', String(newValue));
+    };
 
     const handleUpdateOrder = async (orderId: string, status: OrderStatus, eta?: number, notes?: string) => {
         try {
@@ -274,15 +348,6 @@ export default function StaffDashboardPage() {
 
     return (
         <div className={`min-h-screen ${isDarkMode ? 'bg-gray-950' : 'bg-gray-50'}`}>
-            {(!snoozeUntil || Date.now() > snoozeUntil) && (
-                <NewOrderAlertModal
-                    orders={alertOrders}
-                    onAccept={(orderId, eta, notes) => handleUpdateOrder(orderId, 'accepted', eta, notes)}
-                    onReject={(orderId, reason) => handleUpdateOrder(orderId, 'cancelled', undefined, reason)}
-                    onSnooze={() => setSnoozeUntil(Date.now() + 5 * 60 * 1000)} // 5 minutes
-                    isDarkMode={isDarkMode}
-                />
-            )}
             {/* Header */}
             <div className={`sticky top-0 z-40 backdrop-blur-lg border-b ${isDarkMode ? 'bg-gray-950/80 border-gray-800' : 'bg-white/80 border-gray-200'}`}>
                 <div className="max-w-6xl mx-auto px-4 py-4">
@@ -303,6 +368,16 @@ export default function StaffDashboardPage() {
                                 title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                             >
                                 {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                            </button>
+                            <button
+                                onClick={togglePopup}
+                                className={`p-2 rounded-xl transition-colors ${popupEnabled
+                                    ? (isDarkMode ? 'bg-blue-500 text-white' : 'bg-blue-500 text-white')
+                                    : (isDarkMode ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-gray-100 text-gray-400 hover:bg-gray-200')
+                                    }`}
+                                title={popupEnabled ? 'Disable Popup (Voice Only)' : 'Enable Popup Alerts'}
+                            >
+                                {popupEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
                             </button>
                             <button
                                 onClick={() => setSoundEnabled(!soundEnabled)}

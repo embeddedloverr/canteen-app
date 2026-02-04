@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Clock, CheckCircle, ChefHat, Truck, XCircle, Package } from 'lucide-react';
 import { Card, Badge } from '@/components/ui';
-import { formatTime, getStatusLabel } from '@/lib/utils';
+import { formatDate, formatTime, getStatusLabel } from '@/lib/utils';
 import type { Order } from '@/types';
 
 interface OrderCardProps {
@@ -68,6 +68,7 @@ export function OrderCard({ order, onSelect, isDarkMode = true }: OrderCardProps
                             <Package className="w-4 h-4" />
                             <span>{totalItems} items</span>
                         </div>
+                        <p className="text-xs text-gray-500">{formatDate(order.createdAt)}</p>
                         <p className="text-xs text-gray-500">{formatTime(order.createdAt)}</p>
                     </div>
                 </div>
