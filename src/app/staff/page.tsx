@@ -278,7 +278,7 @@ export default function StaffDashboardPage() {
                         }
                         return itemText;
                     }).join(', ');
-                    const text = `Gentle reminder. Order ${o.orderNumber} for ${location}, ${o.tableNumber}. Items: ${items}. Please prepare for delivery soon.`;
+                    const text = `Gentle reminder for ${o.tableNumber}. Items: ${items}. Please prepare for delivery soon.`;
                     playNotification(text);
                     midEtaAnnouncementsRef.current.set(o._id, now);
                 });
