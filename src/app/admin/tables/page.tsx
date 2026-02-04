@@ -457,7 +457,7 @@ export default function AdminTablesPage() {
                             onClick={e => e.stopPropagation()}
                             className="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-6 text-center"
                         >
-                            <h3 className="text-xl font-bold text-gray-900 mb-1">Table {qrModalData.tableNumber}</h3>
+                            <h3 className="text-xl font-bold text-gray-900 mb-1">{qrModalData.tableNumber}</h3>
                             <p className="text-orange-600 text-sm font-medium mb-1">{qrModalData.canteenLocation}</p>
                             <p className="text-gray-500 text-sm mb-6">Scan to order • Staff delivers to table</p>
 
