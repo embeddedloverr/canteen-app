@@ -3,16 +3,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Clock, CheckCircle, Package, Bell, LogOut, Volume2, VolumeX, Sun, Moon, BellOff } from 'lucide-react';
+import { RefreshCw, Clock, CheckCircle, Package, Bell, LogOut, Volume2, VolumeX, Sun, Moon, BellOff, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui';
 import { OrderCard, OrderDetailModal, NewOrderAlertModal } from '@/components/staff';
 import type { Order, OrderStatus } from '@/types';
 
-const statusFilters: { id: OrderStatus | 'all' | 'active'; label: string; icon: React.ElementType }[] = [
+const statusFilters: { id: OrderStatus | 'all' | 'active'; label: string; icon: React.ElementType; adminOnly?: boolean }[] = [
     { id: 'all', label: 'All', icon: RefreshCw },
     { id: 'pending', label: 'Pending', icon: Clock },
     { id: 'accepted', label: 'Accepted', icon: CheckCircle },
     { id: 'delivered', label: 'Delivered', icon: Package },
+    { id: 'cancelled', label: 'Cancelled', icon: XCircle, adminOnly: true },
 ];
 
 export default function StaffDashboardPage() {
@@ -424,32 +425,34 @@ export default function StaffDashboardPage() {
 
                     {/* Filters */}
                     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                        {statusFilters.map(filter => {
-                            const Icon = filter.icon;
-                            const count = filter.id === 'all'
-                                ? orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled').length
-                                : orders.filter(o => o.status === filter.id).length;
+                        {statusFilters
+                            .filter(filter => !filter.adminOnly || isAdmin)
+                            .map(filter => {
+                                const Icon = filter.icon;
+                                const count = filter.id === 'all'
+                                    ? orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled').length
+                                    : orders.filter(o => o.status === filter.id).length;
 
-                            return (
-                                <button
-                                    key={filter.id}
-                                    onClick={() => setSelectedFilter(filter.id)}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-xl whitespace-nowrap transition-all ${selectedFilter === filter.id
-                                        ? 'bg-orange-500 text-white'
-                                        : (isDarkMode ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50')
-                                        }`}
-                                >
-                                    <Icon className="w-4 h-4" />
-                                    {filter.label}
-                                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${selectedFilter === filter.id
-                                        ? 'bg-white/20'
-                                        : (isDarkMode ? 'bg-gray-700' : 'bg-gray-100')
-                                        }`}>
-                                        {count}
-                                    </span>
-                                </button>
-                            );
-                        })}
+                                return (
+                                    <button
+                                        key={filter.id}
+                                        onClick={() => setSelectedFilter(filter.id)}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl whitespace-nowrap transition-all ${selectedFilter === filter.id
+                                            ? 'bg-orange-500 text-white'
+                                            : (isDarkMode ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50')
+                                            }`}
+                                    >
+                                        <Icon className="w-4 h-4" />
+                                        {filter.label}
+                                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${selectedFilter === filter.id
+                                            ? 'bg-white/20'
+                                            : (isDarkMode ? 'bg-gray-700' : 'bg-gray-100')
+                                            }`}>
+                                            {count}
+                                        </span>
+                                    </button>
+                                );
+                            })}
                     </div>
                 </div>
             </div>
