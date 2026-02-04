@@ -167,7 +167,7 @@ export default function AdminTablesPage() {
             ctx.fillStyle = '#1f2937';
             ctx.font = 'bold 24px Arial, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(`Table ${qrModalData.tableNumber}`, canvasWidth / 2, 35);
+            ctx.fillText(qrModalData.tableNumber, canvasWidth / 2, 35);
 
             // Canteen Location
             ctx.fillStyle = '#ea580c';
