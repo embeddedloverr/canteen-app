@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Clock, CheckCircle, Package, Bell, LogOut, Volume2, VolumeX, Sun, Moon, BellOff } from 'lucide-react';
 import { Badge } from '@/components/ui';
@@ -16,6 +16,8 @@ const statusFilters: { id: OrderStatus | 'all' | 'active'; label: string; icon: 
 ];
 
 export default function StaffDashboardPage() {
+    const { data: session } = useSession();
+    const isAdmin = session?.user?.role === 'admin';
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedFilter, setSelectedFilter] = useState<OrderStatus | 'all' | 'active'>('all');
@@ -475,6 +477,16 @@ export default function StaffDashboardPage() {
                                     key={order._id}
                                     order={order}
                                     onSelect={setSelectedOrder}
+                                    onDelete={async (orderId) => {
+                                        const res = await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
+                                        const data = await res.json();
+                                        if (data.success) {
+                                            setOrders(orders.filter(o => o._id !== orderId));
+                                        } else {
+                                            alert(data.error || 'Failed to delete order');
+                                        }
+                                    }}
+                                    isAdmin={isAdmin}
                                     isDarkMode={isDarkMode}
                                 />
                             ))}

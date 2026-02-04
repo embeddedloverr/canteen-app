@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, CheckCircle, ChefHat, Truck, XCircle, Package } from 'lucide-react';
+import { Clock, CheckCircle, ChefHat, Truck, XCircle, Package, Trash2, AlertTriangle } from 'lucide-react';
 import { Card, Badge } from '@/components/ui';
 import { formatDate, formatTime, getStatusLabel } from '@/lib/utils';
 import type { Order } from '@/types';
@@ -9,6 +10,8 @@ import type { Order } from '@/types';
 interface OrderCardProps {
     order: Order;
     onSelect: (order: Order) => void;
+    onDelete?: (orderId: string) => Promise<void>;
+    isAdmin?: boolean;
     isDarkMode?: boolean;
 }
 
@@ -30,9 +33,30 @@ const statusColors = {
     cancelled: 'border-red-500 bg-red-500/10',
 };
 
-export function OrderCard({ order, onSelect, isDarkMode = true }: OrderCardProps) {
+export function OrderCard({ order, onSelect, onDelete, isAdmin = false, isDarkMode = true }: OrderCardProps) {
+    const [deleteConfirm, setDeleteConfirm] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+
     const Icon = statusIcons[order.status];
     const totalItems = (order.items || []).reduce((sum, item) => sum + item.quantity, 0);
+    const canDelete = isAdmin && ['delivered', 'cancelled'].includes(order.status) && onDelete;
+
+    const handleDelete = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+
+        if (!deleteConfirm) {
+            setDeleteConfirm(true);
+            // Auto-reset after 3 seconds
+            setTimeout(() => setDeleteConfirm(false), 3000);
+            return;
+        }
+
+        if (onDelete) {
+            setDeleting(true);
+            await onDelete(order._id);
+            setDeleting(false);
+        }
+    };
 
     return (
         <motion.div
@@ -63,13 +87,32 @@ export function OrderCard({ order, onSelect, isDarkMode = true }: OrderCardProps
                         </div>
                         <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{order.tableNumber}</p>
                     </div>
-                    <div className="text-right">
-                        <div className="flex items-center gap-1 text-orange-500 font-bold">
-                            <Package className="w-4 h-4" />
-                            <span>{totalItems} items</span>
+                    <div className="flex items-center gap-2">
+                        <div className="text-right">
+                            <div className="flex items-center gap-1 text-orange-500 font-bold">
+                                <Package className="w-4 h-4" />
+                                <span>{totalItems} items</span>
+                            </div>
+                            <p className="text-xs text-gray-500">{formatDate(order.createdAt)}</p>
+                            <p className="text-xs text-gray-500">{formatTime(order.createdAt)}</p>
                         </div>
-                        <p className="text-xs text-gray-500">{formatDate(order.createdAt)}</p>
-                        <p className="text-xs text-gray-500">{formatTime(order.createdAt)}</p>
+                        {canDelete && (
+                            <button
+                                onClick={handleDelete}
+                                disabled={deleting}
+                                className={`p-2 rounded-lg transition-colors ${deleteConfirm
+                                        ? 'bg-red-500 text-white animate-pulse'
+                                        : 'bg-gray-800 text-gray-400 hover:bg-red-500/20 hover:text-red-400'
+                                    }`}
+                                title={deleteConfirm ? 'Click again to confirm' : 'Delete order'}
+                            >
+                                {deleteConfirm ? (
+                                    <AlertTriangle className="w-4 h-4" />
+                                ) : (
+                                    <Trash2 className="w-4 h-4" />
+                                )}
+                            </button>
+                        )}
                     </div>
                 </div>
 
