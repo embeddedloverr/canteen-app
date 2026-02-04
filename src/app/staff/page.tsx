@@ -155,7 +155,6 @@ export default function StaffDashboardPage() {
             // Construct detailed announcement with cooking instructions
             const visibleOrders = alertOrders.slice(0, 3); // Limit to 3
             const details = visibleOrders.map(o => {
-                const location = o.canteenLocation || 'Canteen';
                 const itemDetails = (o.items || []).map(i => {
                     let itemText = i.name;
                     // Include special instructions (cooking notes) if present
@@ -164,7 +163,7 @@ export default function StaffDashboardPage() {
                     }
                     return itemText;
                 }).join(', ');
-                return `${location}, ${o.tableNumber}. Items: ${itemDetails}`;
+                return `${o.tableNumber}. Items: ${itemDetails}`;
             }).join('. Next order, ');
 
             let text = `${alertOrders.length} new order${alertOrders.length > 1 ? 's' : ''}! ${details}`;
