@@ -220,12 +220,9 @@ export default function StaffDashboardPage() {
             });
 
             if (ordersToAnnounce.length > 0) {
-                // Announce with location details
-                const orderDetails = ordersToAnnounce.slice(0, 3).map(o => {
-                    const location = o.canteenLocation || 'Canteen';
-                    return `${o.orderNumber} at ${location}, ${o.tableNumber}`;
-                }).join('. ');
-                const text = `Warning. ${ordersToAnnounce.length} order${ordersToAnnounce.length > 1 ? 's are' : ' is'} overdue and undelivered. ${orderDetails}. Please confirm the delivery.`;
+                // Announce with table numbers only
+                const tableNumbers = ordersToAnnounce.slice(0, 3).map(o => o.tableNumber).join(', ');
+                const text = `Warning. ${ordersToAnnounce.length} order${ordersToAnnounce.length > 1 ? 's are' : ' is'} overdue. ${tableNumbers}. Please confirm the delivery.`;
                 playNotification(text);
 
                 // Update timestamps
