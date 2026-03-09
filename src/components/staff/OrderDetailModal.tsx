@@ -55,7 +55,7 @@ export function OrderDetailModal({ order, onClose, onUpdate }: OrderDetailModalP
                 {/* Header */}
                 <div className="sticky top-0 bg-gray-900 border-b border-gray-800 p-4 flex items-center justify-between">
                     <div>
-                        <h2 className="text-xl font-bold text-white">{order.orderNumber}</h2>
+                        <h2 className="text-xl font-bold text-white">{order.tableNumber}</h2>
                         <p className="text-sm text-gray-400">{formatDateTime(order.createdAt)}</p>
                     </div>
                     <button
@@ -87,7 +87,7 @@ export function OrderDetailModal({ order, onClose, onUpdate }: OrderDetailModalP
                     <Card className="p-4">
                         <h3 className="text-sm font-medium text-gray-400 mb-2">Customer</h3>
                         <p className="text-white font-semibold">{order.customerName}</p>
-                        <p className="text-gray-500 text-sm mt-1">{order.tableNumber}</p>
+                        <p className="text-gray-500 text-sm mt-1">{order.orderNumber}</p>
                     </Card>
 
                     {/* Order Items */}

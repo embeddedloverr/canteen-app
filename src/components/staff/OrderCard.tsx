@@ -73,7 +73,7 @@ export function OrderCard({ order, onSelect, onDelete, isAdmin = false, isDarkMo
                 <div className="flex items-start justify-between mb-3">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
-                            <span className={`font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{order.orderNumber}</span>
+                            <span className={`font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{order.tableNumber}</span>
                             <Badge
                                 variant={
                                     order.status === 'pending' ? 'warning' :
@@ -85,7 +85,7 @@ export function OrderCard({ order, onSelect, onDelete, isAdmin = false, isDarkMo
                                 {getStatusLabel(order.status)}
                             </Badge>
                         </div>
-                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{order.tableNumber}</p>
+                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{order.orderNumber}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="text-right">
@@ -101,8 +101,8 @@ export function OrderCard({ order, onSelect, onDelete, isAdmin = false, isDarkMo
                                 onClick={handleDelete}
                                 disabled={deleting}
                                 className={`p-2 rounded-lg transition-colors ${deleteConfirm
-                                        ? 'bg-red-500 text-white animate-pulse'
-                                        : 'bg-gray-800 text-gray-400 hover:bg-red-500/20 hover:text-red-400'
+                                    ? 'bg-red-500 text-white animate-pulse'
+                                    : 'bg-gray-800 text-gray-400 hover:bg-red-500/20 hover:text-red-400'
                                     }`}
                                 title={deleteConfirm ? 'Click again to confirm' : 'Delete order'}
                             >
