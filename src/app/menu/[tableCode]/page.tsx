@@ -106,7 +106,7 @@ export default function MenuPage({ params }: MenuPageProps) {
         <div
             className="min-h-screen pb-32 relative bg-gray-50/70"
             style={{
-                backgroundImage: 'url(/images/cartoonish-food-bg-light.png)',
+                backgroundImage: 'url(/images/cartoonish-food-bg-blue.png)',
                 backgroundSize: '400px',
                 backgroundRepeat: 'repeat',
                 backgroundAttachment: 'fixed',
