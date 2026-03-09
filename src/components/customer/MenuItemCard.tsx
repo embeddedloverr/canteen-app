@@ -39,52 +39,33 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
             transition={{ duration: 0.3 }}
         >
             <Card hover className="overflow-hidden h-full">
-                <div className="relative">
-                    {item.image ? (
-                        <Image
-                            src={item.image}
-                            alt={item.name}
-                            width={400}
-                            height={200}
-                            className="w-full h-40 object-cover"
-                        />
-                    ) : (
-                        <div className="w-full h-40 bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center">
-                            <span className="text-4xl">🍽️</span>
-                        </div>
-                    )}
-
-                    {/* Veg/Non-veg indicator */}
-                    <div className="absolute top-3 left-3">
-                        <Badge variant={item.isVeg ? 'veg' : 'nonveg'}>
-                            {item.isVeg ? '●' : '●'}
-                        </Badge>
+                {/* Unavailable overlay */}
+                {!item.isAvailable && (
+                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-10">
+                        <span className="text-white font-bold text-lg">Currently Unavailable</span>
                     </div>
-
-                    {/* Tags */}
-                    {item.tags.length > 0 && (
-                        <div className="absolute top-3 right-3 flex gap-1">
-                            {item.tags.slice(0, 2).map(tag => (
-                                <Badge key={tag} variant="warning" className="text-[10px]">
-                                    {tag}
-                                </Badge>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* Unavailable overlay */}
-                    {!item.isAvailable && (
-                        <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-                            <span className="text-white font-bold text-lg">Currently Unavailable</span>
-                        </div>
-                    )}
-                </div>
+                )}
 
                 <div className="p-4">
                     <div className="flex items-start justify-between mb-2">
-                        <div>
-                            <h3 className="font-bold text-white text-lg line-clamp-1">{item.name}</h3>
-                            <p className="text-gray-400 text-sm line-clamp-2 mt-1">{item.description}</p>
+                        <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                                <Badge variant={item.isVeg ? 'veg' : 'nonveg'} className="px-1.5 py-0">
+                                    {item.isVeg ? '●' : '●'}
+                                </Badge>
+                                <h3 className="font-bold text-white text-lg line-clamp-1">{item.name}</h3>
+                            </div>
+                            <p className="text-gray-400 text-sm line-clamp-2">{item.description}</p>
+                            {/* Tags */}
+                            {item.tags.length > 0 && (
+                                <div className="flex gap-1 mt-2">
+                                    {item.tags.slice(0, 2).map(tag => (
+                                        <Badge key={tag} variant="warning" className="text-[10px]">
+                                            {tag}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
