@@ -41,8 +41,8 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
             <Card hover className="overflow-hidden h-full">
                 {/* Unavailable overlay */}
                 {!item.isAvailable && (
-                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-10">
-                        <span className="text-white font-bold text-lg">Currently Unavailable</span>
+                    <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10">
+                        <span className="text-gray-900 font-bold text-lg">Currently Unavailable</span>
                     </div>
                 )}
 
@@ -53,9 +53,9 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
                                 <Badge variant={item.isVeg ? 'veg' : 'nonveg'} className="px-1.5 py-0">
                                     {item.isVeg ? '●' : '●'}
                                 </Badge>
-                                <h3 className="font-bold text-white text-lg line-clamp-1">{item.name}</h3>
+                                <h3 className="font-bold text-gray-900 text-lg line-clamp-1">{item.name}</h3>
                             </div>
-                            <p className="text-gray-400 text-sm line-clamp-2">{item.description}</p>
+                            <p className="text-gray-600 text-sm line-clamp-2">{item.description}</p>
                             {/* Tags */}
                             {item.tags.length > 0 && (
                                 <div className="flex gap-1 mt-2">
@@ -70,7 +70,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
                     </div>
 
                     <div className="flex items-center justify-between mt-4">
-                        <div className="flex items-center gap-1 text-gray-400">
+                        <div className="flex items-center gap-1 text-gray-500">
                             <Clock className="w-4 h-4" />
                             <span className="text-sm">~{item.preparationTime} min</span>
                         </div>
@@ -86,14 +86,14 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
                                     Add
                                 </Button>
                             ) : (
-                                <div className="flex items-center gap-2 bg-gray-800 rounded-full p-1">
+                                <div className="flex items-center gap-2 bg-gray-100 rounded-full p-1 border border-gray-200">
                                     <button
                                         onClick={handleDecrement}
-                                        className="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors"
+                                        className="w-8 h-8 rounded-full bg-white hover:bg-gray-50 border border-gray-200 flex items-center justify-center transition-colors shadow-sm"
                                     >
-                                        <Minus className="w-4 h-4 text-white" />
+                                        <Minus className="w-4 h-4 text-gray-700" />
                                     </button>
-                                    <span className="w-6 text-center font-bold text-white">{quantity}</span>
+                                    <span className="w-6 text-center font-bold text-gray-900">{quantity}</span>
                                     <button
                                         onClick={handleIncrement}
                                         className="w-8 h-8 rounded-full bg-orange-500 hover:bg-orange-600 flex items-center justify-center transition-colors"

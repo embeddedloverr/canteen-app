@@ -92,20 +92,29 @@ export default function MenuPage({ params }: MenuPageProps) {
 
     if (error) {
         return (
-            <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
                 <div className="text-center">
                     <div className="text-6xl mb-4">😕</div>
-                    <h1 className="text-2xl font-bold text-white mb-2">Oops!</h1>
-                    <p className="text-gray-400">{error}</p>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Oops!</h1>
+                    <p className="text-gray-500">{error}</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-950 pb-32">
+        <div
+            className="min-h-screen pb-32 relative bg-gray-50/90"
+            style={{
+                backgroundImage: 'url(/images/cartoonish-food-bg-light.png)',
+                backgroundSize: '400px',
+                backgroundRepeat: 'repeat',
+                backgroundAttachment: 'fixed',
+                backgroundBlendMode: 'overlay',
+            }}
+        >
             {/* Header */}
-            <div className="sticky top-0 z-40 bg-gray-950/80 backdrop-blur-lg border-b border-gray-800">
+            <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-200 shadow-sm">
                 <div className="max-w-4xl mx-auto px-4 py-4">
                     {/* Table Info */}
                     {tableInfo && (
@@ -115,32 +124,32 @@ export default function MenuPage({ params }: MenuPageProps) {
                             className="flex items-center justify-between mb-4"
                         >
                             <div>
-                                <h1 className="text-xl font-bold text-white">
+                                <h1 className="text-xl font-bold text-gray-900">
                                     {process.env.NEXT_PUBLIC_APP_NAME || 'Canteen Express'}
                                 </h1>
-                                <div className="flex items-center gap-2 text-sm text-gray-400">
+                                <div className="flex items-center gap-2 text-sm text-gray-500">
                                     <MapPin className="w-4 h-4" />
                                     <span>{tableInfo.tableNumber} • {tableInfo.location}</span>
                                 </div>
                             </div>
                             <button
                                 onClick={() => router.push('/history')}
-                                className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
+                                className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
                             >
-                                <History className="w-5 h-5 text-gray-400" />
+                                <History className="w-5 h-5 text-gray-600" />
                             </button>
                         </motion.div>
                     )}
 
                     {/* Search */}
                     <div className="relative mb-4">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <Input
                             type="text"
                             placeholder="Search for dishes..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-12"
+                            className="pl-12 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-500 focus:ring-orange-500/20"
                         />
                     </div>
                 </div>
@@ -158,10 +167,10 @@ export default function MenuPage({ params }: MenuPageProps) {
                         ))}
                     </div>
                 ) : filteredItems.length === 0 ? (
-                    <div className="text-center py-12">
+                    <div className="text-center py-12 bg-white/50 backdrop-blur-sm rounded-2xl border border-gray-200 shadow-sm relative z-10">
                         <div className="text-6xl mb-4">🍽️</div>
-                        <h2 className="text-xl font-bold text-white mb-2">No items found</h2>
-                        <p className="text-gray-400">Try adjusting your search</p>
+                        <h2 className="text-xl font-bold text-gray-900 mb-2">No items found</h2>
+                        <p className="text-gray-500">Try adjusting your search</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
