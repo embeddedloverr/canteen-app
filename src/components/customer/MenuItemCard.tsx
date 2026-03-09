@@ -38,7 +38,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
         >
-            <Card hover className="overflow-hidden h-full bg-[#8ECDE2] border-[#7DBCCF]">
+            <Card hover className="overflow-hidden h-full bg-[#A4D8E8] border-[#8ECDE2]">
                 {/* Unavailable overlay */}
                 {!item.isAvailable && (
                     <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10">
